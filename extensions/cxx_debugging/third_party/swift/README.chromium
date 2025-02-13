@@ -1,0 +1,13 @@
+Name: The Swift Programming Language
+Short Name: swift
+URL: https://github.com/swiftlang/swift
+Version: N/A
+Date: TODO
+Revision: TODO
+License: Apache 2.0 with LLVM Exceptions
+License File: src/LICENSE.TXT
+Shipped: no
+Security Critical: no
+Description: The Swift project produces a compiler, standard library, and other tools for developing software in the Swift programming language. In order to achieve ABI stability and debuggability, programs produced by the Swift compiler contain type layout information in its own metadata sections instead of the standard DWARF format. This metadata is used by both the Swift runtime and LLDB to inspect objects at runtime.
+
+In the DevTools debugging extension, a part of the Swift project is used to read such metadata through LLDB's Swift language plugin.

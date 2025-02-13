@@ -4,11 +4,11 @@
 	gclient-condition = build_with_chromium == False
 [submodule "extensions/cxx_debugging/third_party/llvm/src"]
 	path = extensions/cxx_debugging/third_party/llvm/src
-	url = https://chromium.googlesource.com/external/github.com/llvm/llvm-project
+	url = https://github.com/kateinoigakukun/llvm-project.git
 	gclient-condition = checkout_cxx_debugging_extension_deps == True
 [submodule "extensions/cxx_debugging/third_party/lldb-eval/src"]
 	path = extensions/cxx_debugging/third_party/lldb-eval/src
-	url = https://chromium.googlesource.com/external/github.com/google/lldb-eval
+	url = https://github.com/kateinoigakukun/lldb-eval.git
 	gclient-condition = checkout_cxx_debugging_extension_deps == True
 [submodule "buildtools"]
 	path = buildtools
@@ -26,3 +26,6 @@
 	path = third_party/inspector_protocol
 	url = https://chromium.googlesource.com/deps/inspector_protocol
 	gclient-condition = build_with_chromium == False
+[submodule "extensions/cxx_debugging/third_party/swift/src"]
+	path = extensions/cxx_debugging/third_party/swift/src
+	url = https://github.com/kateinoigakukun/swift.git

@@ -12,6 +12,8 @@
 #include "WasmVendorPlugins.h"
 
 #include "Plugins/Language/CPlusPlus/CPlusPlusLanguage.h"
+#include "Plugins/Language/Swift/SwiftLanguage.h"
+#include "Plugins/TypeSystem/Swift/TypeSystemSwiftTypeRef.h"
 #include "Plugins/ObjectFile/wasm/ObjectFileWasm.h"
 #include "Plugins/ScriptInterpreter/None/ScriptInterpreterNone.h"
 #include "Plugins/SymbolFile/DWARF/SymbolFileDWARF.h"
@@ -33,6 +35,8 @@ struct DefaultPluginsContext
                             lldb_private::FileSystem,
                             lldb_private::CPlusPlusLanguage,
                             lldb_private::TypeSystemClang,
+                            lldb_private::SwiftLanguage,
+                            lldb_private::TypeSystemSwiftTypeRef,
                             lldb_private::wasm::ObjectFileWasm,
                             lldb_private::wasm::SymbolVendorWasm,
                             symbols_backend::WasmProcess,

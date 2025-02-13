@@ -123,12 +123,17 @@ def stage2(source_dir, stage1_dir, OPTIONS):
     }
     cmake_args = [
         OPTIONS.cmake, OPTIONS.extension_source, *CMAKE_DEFAULTS,
+        # ABI check must be turned off when building with -DNDEBUG
+        '-DLLVM_ABI_BREAKING_CHECKS=FORCE_OFF',
         '-DCMAKE_CXX_FLAGS_RELWITHDEBINFO=-O1 -g -DNDEBUG',
         '-DCMAKE_C_FLAGS_RELWITHDEBINFO=-O1 -g -DNDEBUG',
         '-DCMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO=-O1 -g -DNDEBUG -gseparate-dwarf',
         '-DCMAKE_CXX_FLAGS_DEBUG=-O0 -g -DNDEBUG',
         '-DCMAKE_EXE_LINKER_FLAGS_DEBUG=-O0 -g -gseparate-dwarf',
+        '-DCMAKE_EXE_LINKER_FLAGS=-sERROR_ON_UNDEFINED_SYMBOLS=0',
         '-DHAVE_POSIX_REGEX=0', '-Derrc_exit_code=0',
+        '-DHAVE_SIGALTSTACK=0',
+        '-Dcmark-gfm_DIR={}'.format(os.path.join(source_dir, 'ports')),
         '-Derrc_exit_code__TRYRUN_OUTPUT=0',
         '-DCMAKE_BUILD_TYPE={build_type}'.format(**cmake_settings),
         '-DCMAKE_TOOLCHAIN_FILE={toolchain_file}'.format(**cmake_settings),
