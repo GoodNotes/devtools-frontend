@@ -15,10 +15,12 @@
     <script type="module">
       import {createPlugin} from './DWARFSymbols.js';
       import {ResourceLoader} from './MEMFSResourceLoader.js';
+      import {TestHostInterface} from '../tests/TestUtils.js';
+
       (async () => {
         globalThis.createPlugin = createPlugin;
         console.log('Loading plugin...');
-        globalThis.plugin = await createPlugin(new ResourceLoader());
+        globalThis.plugin = await createPlugin(new TestHostInterface(), new ResourceLoader());
         console.log('Plugin loaded');
       })();
     </script>
