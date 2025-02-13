@@ -348,7 +348,7 @@ export class CXXValue implements Value, LazyObject {
       const formatter = CustomFormatters.get(this.type);
       if (!formatter) {
         const type = 'undefined' as Chrome.DevTools.RemoteObjectType;
-        const description = '<not displayable>';
+        const description = this.displayValue || '<not displayable>';
         return {type, description, hasChildren: false};
       }
 
@@ -373,7 +373,7 @@ export class CXXValue implements Value, LazyObject {
     const {objectId} = this;
     return {
       type,
-      description: this.type.typeNames[0],
+      description: this.displayValue || this.type.typeNames[0],
       hasChildren: this.type.members.length > 0,
       linearMemoryAddress: this.memoryAddress,
       linearMemorySize: this.type.size,

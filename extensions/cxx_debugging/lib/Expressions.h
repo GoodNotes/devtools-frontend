@@ -36,6 +36,7 @@ struct ExpressionResult {
                std::nullptr_t>
       value;
   std::optional<size_t> address;
+  std::optional<std::string> display_value = std::nullopt;
 };
 
 llvm::Expected<lldb::ProcessSP> CreateProcess(const WasmModule& module,

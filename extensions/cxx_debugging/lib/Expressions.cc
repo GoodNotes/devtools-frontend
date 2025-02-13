@@ -157,7 +157,18 @@ llvm::Expected<ExpressionResult> InterpretExpression(
   }
   auto type = GetCompilerType(ToSBType(result.type()));
   auto top_type = GetTopType(type);
-  auto val = result.inner_value();
+  lldb::SBValue val = result.inner_value();
+
+  const char *summary = val.GetSummary();
+  if (!summary) {
+    auto value = val.GetValueAsSigned();
+    summary = lldb_private::ConstString(std::to_string(value).c_str()).AsCString();
+  }
+
+  std::optional<std::string> display_value;
+  if (summary) {
+    display_value = std::string(summary);
+  }
 
   std::optional<size_t> address;
   if (auto address_of = val.AddressOf()) {
@@ -291,17 +302,17 @@ llvm::Expected<ExpressionResult> InterpretExpression(
   if (result.IsPointer()) {
     if (module.Module()->GetArchitecture().GetAddressByteSize() == 4) {
       return ExpressionResult{type, static_cast<uint32_t>(result.GetUInt64()),
-                              address};
+                              address, display_value};
     } else {
       return ExpressionResult{type, static_cast<uint64_t>(result.GetUInt64()),
-                              address};
+                              address, display_value};
     }
   }
 
   auto ptr = result.AddressOf();
   if (ptr.IsValid()) {
     return ExpressionResult{type, reinterpret_cast<void*>(ptr.GetUInt64()),
-                            address};
+                            address, display_value};
   }
 
   return llvm::createStringError(llvm::inconvertibleErrorCode(),

@@ -461,12 +461,14 @@ struct EvalVisitor {
   lldb::ProcessSP process;
   lldb_private::CompilerType type;
   std::optional<size_t> address;
+  std::optional<std::string> display_value;
 
   EvalVisitor(ApiContext& context,
               lldb::ProcessSP process,
               lldb_private::CompilerType type,
-              std::optional<size_t> address)
-      : context(context), process(process), type(type), address(address) {}
+              std::optional<size_t> address,
+              std::optional<std::string> display_value)
+      : context(context), process(process), type(type), address(address), display_value(display_value) {}
 
   api::EvaluateExpressionResponse MakeResponse() {
     lldb_private::ExecutionContext exe_ctx(process);
@@ -479,6 +481,7 @@ struct EvalVisitor {
     return api::EvaluateExpressionResponse()
         .SetTypeInfos(std::move(*member_type_infos))
         .SetRoot(root_type)
+        .SetDisplayValue(display_value)
         .SetMemoryAddress(address ? std::optional<int32_t>(*address)
                                   : std::nullopt);
   }
@@ -496,7 +499,7 @@ struct EvalVisitor {
     std::vector<int32_t> data = {begin, end};
 
     bool is_signed = false;
-    std::optional<std::string> enum_label;
+    std::optional<std::string> enum_label = this->display_value;
     if (type.IsEnumerationType(is_signed)) {
       type.ForEachEnumerator([&enum_label, v](auto t, auto label, auto value) {
         if (value == v) {
@@ -621,7 +624,7 @@ api::EvaluateExpressionResponse ApiContext::EvaluateExpression(
         MakeError(Error::Code::kEvalError, result.takeError()));
   }
 
-  return std::visit(EvalVisitor(*this, *process, result->type, result->address),
+  return std::visit(EvalVisitor(*this, *process, result->type, result->address, result->display_value),
                     result->value);
 }
 
