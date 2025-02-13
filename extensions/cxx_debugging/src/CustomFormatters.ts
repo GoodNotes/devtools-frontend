@@ -180,7 +180,8 @@ export class WasmMemoryView {
     }
     let slice = this.pages.findSlice(page);
     const size = WasmMemoryView.PAGE_SIZE * count;
-    if (!slice || slice.length < count * WasmMemoryView.PAGE_SIZE) {
+    // Check if the slice covers up to the end of the requested range.
+    if (!slice || (slice.begin + slice.length) < (page + count * WasmMemoryView.PAGE_SIZE)) {
       const data = this.wasm.readMemory(page, size);
       if (data.byteOffset !== 0 || data.byteLength !== data.buffer.byteLength) {
         throw new Error('Did not expect a partial memory view');
