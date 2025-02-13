@@ -385,7 +385,7 @@ WasmModule::GetOffsetFromSourceLocation(
 
       // Include any line 0 entries, they indicate that this is compiler-
       // generated code that does not correspond to user source code.
-      if (next_sc.line_entry.original_file != sc.line_entry.original_file ||
+      if (next_sc.line_entry.original_file_sp->Equal(*sc.line_entry.original_file_sp) ||
           (next_sc.line_entry.line != sc.line_entry.line &&
            next_sc.line_entry.line != 0)) {
         break;
