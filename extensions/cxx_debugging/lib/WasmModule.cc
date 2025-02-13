@@ -449,8 +449,8 @@ FunctionInfo WasmModule::GetFunctionInfo(lldb::addr_t offset) const {
     // Compile unit might be missing symbols?
 
     // Cast user data to DwarfUnit
-    DWARFCompileUnit* dwarf_cu =
-        static_cast<DWARFCompileUnit*>(sc.comp_unit->GetUserData());
+    lldb_private::plugin::dwarf::DWARFCompileUnit* dwarf_cu =
+        static_cast<lldb_private::plugin::dwarf::DWARFCompileUnit*>(sc.comp_unit->GetUserData());
     if (dwarf_cu && dwarf_cu == &dwarf_cu->GetNonSkeletonUnit()) {
       // The skeleton unit is the only unit, but is there supposed to be a .dwo?
       llvm::SmallVector<std::string, 2> missing_symbols;

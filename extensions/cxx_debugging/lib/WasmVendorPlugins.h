@@ -214,7 +214,7 @@ class WasmProcess : public lldb_private::Process {
   llvm::StringRef GetPluginName() override { return GetPluginNameStatic(); }
 };
 
-class SymbolFileWasmDWARF : public ::SymbolFileDWARF {
+class SymbolFileWasmDWARF : public lldb_private::plugin::dwarf::SymbolFileDWARF {
   static char ID;
 
  public:
