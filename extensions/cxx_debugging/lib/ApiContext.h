@@ -9,7 +9,6 @@
 
 #include "emscripten/val.h"
 #include "lldb/lldb-types.h"
-#include "llvm/ADT/Optional.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/BinaryFormat/Wasm.h"
@@ -107,7 +106,7 @@ class ApiContext : public DWARFSymbolsApi {
       lldb_private::CompilerType type,
       int32_t required_type_depth);
   std::string GetTypeId(lldb_private::CompilerType type);
-  llvm::Optional<lldb_private::CompilerType> GetTypeFromId(
+  std::optional<lldb_private::CompilerType> GetTypeFromId(
       llvm::StringRef type_id);
 
   friend struct EvalVisitor;

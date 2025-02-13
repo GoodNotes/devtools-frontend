@@ -35,7 +35,7 @@ struct ExpressionResult {
                void*,
                std::nullptr_t>
       value;
-  llvm::Optional<size_t> address;
+  std::optional<size_t> address;
 };
 
 llvm::Expected<ExpressionResult> InterpretExpression(

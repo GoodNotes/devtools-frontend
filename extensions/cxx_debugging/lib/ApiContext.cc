@@ -439,11 +439,11 @@ std::string ApiContext::GetTypeId(lldb_private::CompilerType type) {
   return key;
 }
 
-llvm::Optional<lldb_private::CompilerType> ApiContext::GetTypeFromId(
+std::optional<lldb_private::CompilerType> ApiContext::GetTypeFromId(
     llvm::StringRef type_id) {
   auto it = types_.find(type_id.str());
   if (it == types_.end()) {
-    return llvm::None;
+    return std::nullopt;
   }
   return it->getValue();
 }
@@ -451,11 +451,11 @@ llvm::Optional<lldb_private::CompilerType> ApiContext::GetTypeFromId(
 struct EvalVisitor {
   ApiContext& context;
   lldb_private::CompilerType type;
-  llvm::Optional<size_t> address;
+  std::optional<size_t> address;
 
   EvalVisitor(ApiContext& context,
               lldb_private::CompilerType type,
-              llvm::Optional<size_t> address)
+              std::optional<size_t> address)
       : context(context), type(type), address(address) {}
 
   api::EvaluateExpressionResponse MakeResponse() {
@@ -468,8 +468,8 @@ struct EvalVisitor {
     return api::EvaluateExpressionResponse()
         .SetTypeInfos(std::move(*member_type_infos))
         .SetRoot(root_type)
-        .SetMemoryAddress(address ? llvm::Optional<int32_t>(*address)
-                                  : llvm::None);
+        .SetMemoryAddress(address ? std::optional<int32_t>(*address)
+                                  : std::nullopt);
   }
 
   // Most types are stringified in the JS wrapper, including most primitive
@@ -485,7 +485,7 @@ struct EvalVisitor {
     std::vector<int32_t> data = {begin, end};
 
     bool is_signed = false;
-    llvm::Optional<std::string> enum_label;
+    std::optional<std::string> enum_label;
     if (type.IsEnumerationType(is_signed)) {
       type.ForEachEnumerator([&enum_label, v](auto t, auto label, auto value) {
         if (value == v) {

@@ -86,7 +86,7 @@ lldb_private::CompilerType GetCompilerType(lldb::SBType t) {
   return Derived{t}.Get();
 }
 
-llvm::Optional<llvm::Error> CheckError(lldb::SBValue value) {
+std::optional<llvm::Error> CheckError(lldb::SBValue value) {
   auto e = value.GetError();
   if (!e.IsValid() || e.Success()) {
     return {};
@@ -151,7 +151,7 @@ llvm::Expected<ExpressionResult> InterpretExpression(
   auto top_type = GetTopType(type);
   auto val = result.inner_value();
 
-  llvm::Optional<size_t> address;
+  std::optional<size_t> address;
   if (auto address_of = val.AddressOf()) {
     address = address_of.GetValueAsUnsigned();
   }

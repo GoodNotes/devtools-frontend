@@ -45,7 +45,7 @@ EMSCRIPTEN_BINDINGS(LLDBEval) {
 
 struct EvalResult {
   std::string result;
-  llvm::Optional<std::string> error;
+  std::optional<std::string> error;
 };
 
 class EvalTest : public ::testing::Test {
@@ -66,8 +66,8 @@ class EvalTest : public ::testing::Test {
     const auto error = evalResult["error"];
     return {result.as<bool>() ? result.as<std::string>() : std::string(),
             error.as<bool>()
-                ? llvm::Optional<std::string>(error.as<std::string>())
-                : llvm::None};
+                ? std::optional<std::string>(error.as<std::string>())
+                : std::nullopt};
   }
 
   bool Is32Bit() const { return true; }

@@ -50,11 +50,11 @@ DefaultPluginsContext& GetGlobalContext() {
 
 template <typename T, typename ClassT>
 std::function<void(ClassT&, emscripten::val)> OptionalSetter(
-    ClassT& (ClassT::*setter)(llvm::Optional<T>)) {
+    ClassT& (ClassT::*setter)(std::optional<T>)) {
   return [setter](ClassT& cls, emscripten::val value) {
     if (value == emscripten::val::undefined() ||
         value == emscripten::val::null()) {
-      (cls.*setter)(llvm::None);
+      (cls.*setter)(std::nullopt);
     } else {
       (cls.*setter)(value.as<T>());
     }
@@ -63,7 +63,7 @@ std::function<void(ClassT&, emscripten::val)> OptionalSetter(
 
 template <typename T, typename ClassT>
 std::function<emscripten::val(const ClassT&)> OptionalGetter(
-    llvm::Optional<T> (ClassT::*getter)() const) {
+    std::optional<T> (ClassT::*getter)() const) {
   return [getter](const ClassT& cls) {
     if (auto value = (cls.*getter)()) {
       return emscripten::val(std::move(*value));

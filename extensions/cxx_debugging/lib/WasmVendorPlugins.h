@@ -62,8 +62,8 @@ class WasmPlatform : public lldb_private::Platform {
   static void Terminate();
 
   class Resolver : public lldb_private::UserIDResolver {
-    llvm::Optional<std::string> DoGetUserName(id_t uid) final { return {}; }
-    llvm::Optional<std::string> DoGetGroupName(id_t gid) final { return {}; }
+    std::optional<std::string> DoGetUserName(id_t uid) final { return {}; }
+    std::optional<std::string> DoGetGroupName(id_t gid) final { return {}; }
   };
   Resolver resolver_;
 

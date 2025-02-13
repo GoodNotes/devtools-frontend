@@ -5,7 +5,6 @@
 #include "Variables.h"
 
 #include "lldb/Utility/DataExtractor.h"
-#include "llvm/ADT/Optional.h"
 #include "llvm/BinaryFormat/Dwarf.h"
 #include "llvm/Support/Error.h"
 #include "llvm/Support/raw_ostream.h"
@@ -21,7 +20,7 @@ namespace symbols_backend {
 namespace {
 template <typename T>
 llvm::Expected<T> ChainErrors(llvm::Expected<T>&& value,
-                              llvm::Optional<llvm::Error>&& error) {
+                              std::optional<llvm::Error>&& error) {
   if (!error || value) {
     if (error) {
       llvm::consumeError(std::move(*error));

@@ -10,9 +10,8 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 #include <emscripten/val.h>
-
-#include "llvm/ADT/Optional.h"
 
 namespace symbols_backend {
 namespace api {
@@ -37,7 +36,7 @@ class {{ ty.cxx_name }} {
  private:
 {%- if ty.members %}
 {%- for member in ty.members %}
-  {{'llvm::Optional<' if member.optional else ''}}{{'std::vector<' if member.array else ''}}
+  {{'std::optional<' if member.optional else ''}}{{'std::vector<' if member.array else ''}}
 {{- member.type.cxx_name -}}
 {{'>' if member.array else ''}}{{'>' if member.optional else ''}} {{member.cxx_name}}_ = {};
 {{- ' // {}'.format(' '.join(member.doc)) if member.doc else ''}}
@@ -47,11 +46,11 @@ class {{ ty.cxx_name }} {
   {{ty.cxx_name}}() = default;
   virtual ~{{ty.cxx_name}}() = default;
 {%- for member in ty.members %}
-  {{'llvm::Optional<' if member.optional else ''}}{{'std::vector<' if member.array else ''}}
+  {{'std::optional<' if member.optional else ''}}{{'std::vector<' if member.array else ''}}
 {{- member.type.cxx_name -}}
 {{'>' if member.array else ''}}{{'>' if member.optional else ''}} Get{{member.get_accessor_suffix()}}() const { return {{member.cxx_name}}_; }
   {{ty.cxx_name}} &Set{{member.get_accessor_suffix()}}(
-  {{- 'llvm::Optional<' if member.optional else ''}}{{- 'std::vector<' if member.array else ''}}
+  {{- 'std::optional<' if member.optional else ''}}{{- 'std::vector<' if member.array else ''}}
 {{- member.type.cxx_name -}}
 {{'>' if member.array else ''}}{{'>' if member.optional else ''}} value) {
     {{member.cxx_name}}_ = std::move(value);
@@ -71,7 +70,7 @@ class DWARFSymbolsApi {
 {%- endfor %}
   virtual {{command.return_type.cxx_name if command.return_type else 'void'}} {{command.cxx_name}}(
     {%- for member in command.arguments %}
-    {{'llvm::Optional<' if member.optional else ''}}{{'std::vector<' if member.array else ''}}
+    {{'std::optional<' if member.optional else ''}}{{'std::vector<' if member.array else ''}}
     {{- member.type.cxx_name -}}
     {{'>' if member.array else ''}}{{'>' if member.optional else ''}} {{member.cxx_name}}{{ ',' if member != command.arguments[-1] else ''}}
     {{- ' //{}'.format(' '.join(member.doc)) if member.doc else ''}}

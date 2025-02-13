@@ -10,9 +10,8 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 #include <emscripten/val.h>
-
-#include "llvm/ADT/Optional.h"
 
 namespace symbols_backend {
 namespace api {
@@ -172,15 +171,15 @@ class Variable {
 
 class FieldInfo {
  private:
-  llvm::Optional<std::string> name_ = {};
+  std::optional<std::string> name_ = {};
   int32_t offset_ = {};
   std::string type_id_ = {};
 
  public:
   FieldInfo() = default;
   virtual ~FieldInfo() = default;
-  llvm::Optional<std::string> GetName() const { return name_; }
-  FieldInfo &SetName(llvm::Optional<std::string> value) {
+  std::optional<std::string> GetName() const { return name_; }
+  FieldInfo &SetName(std::optional<std::string> value) {
     name_ = std::move(value);
     return *this;
   }
@@ -230,7 +229,7 @@ class TypeInfo {
   int32_t size_ = {};
   bool can_expand_ = {};
   bool has_value_ = {};
-  llvm::Optional<int32_t> array_size_ = {};
+  std::optional<int32_t> array_size_ = {};
   bool is_pointer_ = {};
   std::vector<FieldInfo> members_ = {};
   std::vector<Enumerator> enumerators_ = {};
@@ -268,8 +267,8 @@ class TypeInfo {
     has_value_ = std::move(value);
     return *this;
   }
-  llvm::Optional<int32_t> GetArraySize() const { return array_size_; }
-  TypeInfo &SetArraySize(llvm::Optional<int32_t> value) {
+  std::optional<int32_t> GetArraySize() const { return array_size_; }
+  TypeInfo &SetArraySize(std::optional<int32_t> value) {
     array_size_ = std::move(value);
     return *this;
   }
@@ -295,7 +294,7 @@ class AddRawModuleResponse {
  private:
   std::vector<std::string> sources_ = {}; // The original source files the raw module was compiled from. Filenames are in URL format
   std::vector<std::string> dwos_ = {}; // DWO filenames that might be lazily loaded. Used internally by the extension to set up emscripten filesystem.
-  llvm::Optional<Error> error_ = {}; // Error details if the raw module couldn't be handled
+  std::optional<Error> error_ = {}; // Error details if the raw module couldn't be handled
 
  public:
   AddRawModuleResponse() = default;
@@ -310,8 +309,8 @@ class AddRawModuleResponse {
     dwos_ = std::move(value);
     return *this;
   }
-  llvm::Optional<Error> GetError() const { return error_; }
-  AddRawModuleResponse &SetError(llvm::Optional<Error> value) {
+  std::optional<Error> GetError() const { return error_; }
+  AddRawModuleResponse &SetError(std::optional<Error> value) {
     error_ = std::move(value);
     return *this;
   }
@@ -321,7 +320,7 @@ class AddRawModuleResponse {
 class SourceLocationToRawLocationResponse {
  private:
   std::vector<RawLocationRange> raw_location_ranges_ = {}; // The raw locations matching the source locations
-  llvm::Optional<Error> error_ = {}; // Error details if the command failed
+  std::optional<Error> error_ = {}; // Error details if the command failed
 
  public:
   SourceLocationToRawLocationResponse() = default;
@@ -331,8 +330,8 @@ class SourceLocationToRawLocationResponse {
     raw_location_ranges_ = std::move(value);
     return *this;
   }
-  llvm::Optional<Error> GetError() const { return error_; }
-  SourceLocationToRawLocationResponse &SetError(llvm::Optional<Error> value) {
+  std::optional<Error> GetError() const { return error_; }
+  SourceLocationToRawLocationResponse &SetError(std::optional<Error> value) {
     error_ = std::move(value);
     return *this;
   }
@@ -342,7 +341,7 @@ class SourceLocationToRawLocationResponse {
 class RawLocationToSourceLocationResponse {
  private:
   std::vector<SourceLocation> source_location_ = {}; // The source locations matching the raw locations
-  llvm::Optional<Error> error_ = {}; // Error details if the command failed
+  std::optional<Error> error_ = {}; // Error details if the command failed
 
  public:
   RawLocationToSourceLocationResponse() = default;
@@ -352,8 +351,8 @@ class RawLocationToSourceLocationResponse {
     source_location_ = std::move(value);
     return *this;
   }
-  llvm::Optional<Error> GetError() const { return error_; }
-  RawLocationToSourceLocationResponse &SetError(llvm::Optional<Error> value) {
+  std::optional<Error> GetError() const { return error_; }
+  RawLocationToSourceLocationResponse &SetError(std::optional<Error> value) {
     error_ = std::move(value);
     return *this;
   }
@@ -363,7 +362,7 @@ class RawLocationToSourceLocationResponse {
 class ListVariablesInScopeResponse {
  private:
   std::vector<Variable> variable_ = {}; // The variables present in the scope
-  llvm::Optional<Error> error_ = {}; // Error details if the command failed
+  std::optional<Error> error_ = {}; // Error details if the command failed
 
  public:
   ListVariablesInScopeResponse() = default;
@@ -373,8 +372,8 @@ class ListVariablesInScopeResponse {
     variable_ = std::move(value);
     return *this;
   }
-  llvm::Optional<Error> GetError() const { return error_; }
-  ListVariablesInScopeResponse &SetError(llvm::Optional<Error> value) {
+  std::optional<Error> GetError() const { return error_; }
+  ListVariablesInScopeResponse &SetError(std::optional<Error> value) {
     error_ = std::move(value);
     return *this;
   }
@@ -385,7 +384,7 @@ class GetFunctionInfoResponse {
  private:
   std::vector<std::string> function_names_ = {}; // A list of functions (multiple if inlined) starting with innermost.
   std::vector<std::string> missing_symbol_files_ = {}; // A string representing a missing .dwo file.
-  llvm::Optional<Error> error_ = {}; // error details if the command failed
+  std::optional<Error> error_ = {}; // error details if the command failed
 
  public:
   GetFunctionInfoResponse() = default;
@@ -400,8 +399,8 @@ class GetFunctionInfoResponse {
     missing_symbol_files_ = std::move(value);
     return *this;
   }
-  llvm::Optional<Error> GetError() const { return error_; }
-  GetFunctionInfoResponse &SetError(llvm::Optional<Error> value) {
+  std::optional<Error> GetError() const { return error_; }
+  GetFunctionInfoResponse &SetError(std::optional<Error> value) {
     error_ = std::move(value);
     return *this;
   }
@@ -411,7 +410,7 @@ class GetFunctionInfoResponse {
 class GetInlinedFunctionRangesResponse {
  private:
   std::vector<RawLocationRange> raw_location_ranges_ = {}; // The raw locations of the inlined function or empty
-  llvm::Optional<Error> error_ = {}; // Error details if the command failed
+  std::optional<Error> error_ = {}; // Error details if the command failed
 
  public:
   GetInlinedFunctionRangesResponse() = default;
@@ -421,8 +420,8 @@ class GetInlinedFunctionRangesResponse {
     raw_location_ranges_ = std::move(value);
     return *this;
   }
-  llvm::Optional<Error> GetError() const { return error_; }
-  GetInlinedFunctionRangesResponse &SetError(llvm::Optional<Error> value) {
+  std::optional<Error> GetError() const { return error_; }
+  GetInlinedFunctionRangesResponse &SetError(std::optional<Error> value) {
     error_ = std::move(value);
     return *this;
   }
@@ -432,7 +431,7 @@ class GetInlinedFunctionRangesResponse {
 class GetInlinedCalleesRangesResponse {
  private:
   std::vector<RawLocationRange> raw_location_ranges_ = {}; // The raw locations of any child inlined functions
-  llvm::Optional<Error> error_ = {}; // Error details if the command failed
+  std::optional<Error> error_ = {}; // Error details if the command failed
 
  public:
   GetInlinedCalleesRangesResponse() = default;
@@ -442,8 +441,8 @@ class GetInlinedCalleesRangesResponse {
     raw_location_ranges_ = std::move(value);
     return *this;
   }
-  llvm::Optional<Error> GetError() const { return error_; }
-  GetInlinedCalleesRangesResponse &SetError(llvm::Optional<Error> value) {
+  std::optional<Error> GetError() const { return error_; }
+  GetInlinedCalleesRangesResponse &SetError(std::optional<Error> value) {
     error_ = std::move(value);
     return *this;
   }
@@ -453,7 +452,7 @@ class GetInlinedCalleesRangesResponse {
 class GetMappedLinesResponse {
  private:
   std::vector<int32_t> _mapped_lines_ = {}; // Mapped lines
-  llvm::Optional<Error> error_ = {}; // Error details if the command failed
+  std::optional<Error> error_ = {}; // Error details if the command failed
 
  public:
   GetMappedLinesResponse() = default;
@@ -463,8 +462,8 @@ class GetMappedLinesResponse {
     _mapped_lines_ = std::move(value);
     return *this;
   }
-  llvm::Optional<Error> GetError() const { return error_; }
-  GetMappedLinesResponse &SetError(llvm::Optional<Error> value) {
+  std::optional<Error> GetError() const { return error_; }
+  GetMappedLinesResponse &SetError(std::optional<Error> value) {
     error_ = std::move(value);
     return *this;
   }
@@ -475,11 +474,11 @@ class EvaluateExpressionResponse {
  private:
   std::vector<TypeInfo> type_infos_ = {};
   TypeInfo root_ = {};
-  llvm::Optional<std::string> display_value_ = {};
-  llvm::Optional<int32_t> location_ = {};
-  llvm::Optional<int32_t> memory_address_ = {};
-  llvm::Optional<std::vector<int32_t>> data_ = {};
-  llvm::Optional<Error> error_ = {};
+  std::optional<std::string> display_value_ = {};
+  std::optional<int32_t> location_ = {};
+  std::optional<int32_t> memory_address_ = {};
+  std::optional<std::vector<int32_t>> data_ = {};
+  std::optional<Error> error_ = {};
 
  public:
   EvaluateExpressionResponse() = default;
@@ -494,28 +493,28 @@ class EvaluateExpressionResponse {
     root_ = std::move(value);
     return *this;
   }
-  llvm::Optional<std::string> GetDisplayValue() const { return display_value_; }
-  EvaluateExpressionResponse &SetDisplayValue(llvm::Optional<std::string> value) {
+  std::optional<std::string> GetDisplayValue() const { return display_value_; }
+  EvaluateExpressionResponse &SetDisplayValue(std::optional<std::string> value) {
     display_value_ = std::move(value);
     return *this;
   }
-  llvm::Optional<int32_t> GetLocation() const { return location_; }
-  EvaluateExpressionResponse &SetLocation(llvm::Optional<int32_t> value) {
+  std::optional<int32_t> GetLocation() const { return location_; }
+  EvaluateExpressionResponse &SetLocation(std::optional<int32_t> value) {
     location_ = std::move(value);
     return *this;
   }
-  llvm::Optional<int32_t> GetMemoryAddress() const { return memory_address_; }
-  EvaluateExpressionResponse &SetMemoryAddress(llvm::Optional<int32_t> value) {
+  std::optional<int32_t> GetMemoryAddress() const { return memory_address_; }
+  EvaluateExpressionResponse &SetMemoryAddress(std::optional<int32_t> value) {
     memory_address_ = std::move(value);
     return *this;
   }
-  llvm::Optional<std::vector<int32_t>> GetData() const { return data_; }
-  EvaluateExpressionResponse &SetData(llvm::Optional<std::vector<int32_t>> value) {
+  std::optional<std::vector<int32_t>> GetData() const { return data_; }
+  EvaluateExpressionResponse &SetData(std::optional<std::vector<int32_t>> value) {
     data_ = std::move(value);
     return *this;
   }
-  llvm::Optional<Error> GetError() const { return error_; }
-  EvaluateExpressionResponse &SetError(llvm::Optional<Error> value) {
+  std::optional<Error> GetError() const { return error_; }
+  EvaluateExpressionResponse &SetError(std::optional<Error> value) {
     error_ = std::move(value);
     return *this;
   }

@@ -34,7 +34,6 @@
 #include "lldb/Utility/Log.h"
 #include "lldb/lldb-enumerations.h"
 #include "lldb/lldb-forward.h"
-#include "llvm/ADT/Optional.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/Error.h"
@@ -256,7 +255,7 @@ lldb::VariableSP WasmModule::FindVariableAtOffset(lldb::addr_t offset,
   return {};
 }
 
-llvm::Optional<lldb_private::CompilerType> WasmModule::FindType(
+std::optional<lldb_private::CompilerType> WasmModule::FindType(
     llvm::StringRef name) const {
   lldb_private::TypeList type_list;
   llvm::DenseSet<lldb_private::SymbolFile*> searched_symbol_files;
@@ -265,7 +264,7 @@ llvm::Optional<lldb_private::CompilerType> WasmModule::FindType(
   if (!type_list.Empty()) {
     return type_list.GetTypeAtIndex(0)->GetFullCompilerType();
   }
-  return llvm::None;
+  return std::nullopt;
 }
 
 llvm::SmallSet<SourceLocation, 1> WasmModule::GetSourceLocationFromOffset(
