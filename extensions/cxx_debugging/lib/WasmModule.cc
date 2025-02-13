@@ -71,7 +71,7 @@ struct less<symbols_backend::Variable> {
 }  // namespace std
 
 namespace {
-static llvm::StringRef GetDWOName(DWARFCompileUnit& dwarf_cu) {
+static llvm::StringRef GetDWOName(lldb_private::plugin::dwarf::DWARFCompileUnit& dwarf_cu) {
   return dwarf_cu.GetUnitDIEOnly().GetDIE()->GetAttributeValueAsString(
       &dwarf_cu, lldb_private::dwarf::DW_AT_dwo_name, nullptr);
 }
@@ -155,8 +155,8 @@ SourceInfo WasmModule::GetSourceScripts() const {
     }
 
     // Cast user data to DwarfUnit
-    DWARFCompileUnit* dwarf_cu =
-        static_cast<DWARFCompileUnit*>(compile_unit->GetUserData());
+    lldb_private::plugin::dwarf::DWARFCompileUnit* dwarf_cu =
+        static_cast<lldb_private::plugin::dwarf::DWARFCompileUnit*>(compile_unit->GetUserData());
     if (dwarf_cu && dwarf_cu->GetVersion() >= 5) {
       // Might need to lazy load this .dwo (only works for DWARF5)
       llvm::SmallVector<std::string, 2> missing_symbols;
@@ -258,12 +258,16 @@ lldb::VariableSP WasmModule::FindVariableAtOffset(lldb::addr_t offset,
 
 std::optional<lldb_private::CompilerType> WasmModule::FindType(
     llvm::StringRef name) const {
-  lldb_private::TypeList type_list;
+  lldb_private::TypeResults type_list;
   llvm::DenseSet<lldb_private::SymbolFile*> searched_symbol_files;
-  module_->FindTypes(lldb_private::ConstString(name), true, 1,
-                     searched_symbol_files, type_list);
-  if (!type_list.Empty()) {
-    return type_list.GetTypeAtIndex(0)->GetFullCompilerType();
+  lldb_private::TypeQuery query(
+      lldb_private::ConstString(name),
+      lldb_private::TypeQueryOptions::e_find_one |
+          lldb_private::TypeQueryOptions::e_exact_match);
+  module_->FindTypes(query, type_list);
+  lldb::TypeSP type_sp = type_list.GetFirstType();
+  if (type_sp) {
+    return type_sp->GetFullCompilerType();
   }
   return std::nullopt;
 }
