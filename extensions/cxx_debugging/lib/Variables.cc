@@ -5,6 +5,9 @@
 #include "Variables.h"
 
 #include "lldb/Utility/DataExtractor.h"
+#include "lldb/Target/ExecutionContext.h"
+#include "lldb/Target/ExecutionContextScope.h"
+#include "lldb/Target/Process.h"
 #include "llvm/BinaryFormat/Dwarf.h"
 #include "llvm/Support/Error.h"
 #include "llvm/Support/raw_ostream.h"
@@ -68,6 +71,32 @@ static void CreateMemberInfo(lldb_private::ExecutionContext& exe_ctx,
       child_name = "<union>";
     }
     members.emplace_back(child_name, bit_offset / 8, child_type);
+  }
+  auto maybe_num_children = type.GetNumChildren(true, &exe_ctx);
+  if (maybe_num_children) {
+    for (size_t child = 0; child < *maybe_num_children; ++child) {
+      bool omit_empty_base_classes = true;
+      bool ignore_array_bounds = true;
+      std::string child_name;
+      uint32_t child_byte_size = 0;
+      int32_t child_byte_offset = 0;
+      uint32_t child_bitfield_bit_size = 0;
+      uint32_t child_bitfield_bit_offset = 0;
+      bool child_is_base_class = false;
+      bool child_is_deref_of_parent = false;
+      uint64_t language_flags = 0;
+      const bool transparent_pointers = false;
+
+      auto child_type =
+          type.GetChildCompilerTypeAtIndex(
+              &exe_ctx, child, transparent_pointers, omit_empty_base_classes,
+              ignore_array_bounds, child_name, child_byte_size, child_byte_offset,
+              child_bitfield_bit_size, child_bitfield_bit_offset,
+              child_is_base_class, child_is_deref_of_parent, nullptr, language_flags);
+      if (child_type) {
+        members.emplace_back(child_name, child_byte_offset, *child_type);
+      }
+    }
   }
 }
 
