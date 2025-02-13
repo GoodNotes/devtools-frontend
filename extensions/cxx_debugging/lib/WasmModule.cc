@@ -307,7 +307,7 @@ std::vector<int32_t> WasmModule::GetMappedLines(
     // Gather all line entries for the compile_unit
     lldb_private::LineTable* table = compile_unit->GetLineTable();
     while (file_idx != UINT32_MAX) {
-      table->FineLineEntriesForFileIndex(file_idx, true, line_entry_scs);
+      table->FindLineEntriesForFileIndex(file_idx, true, line_entry_scs);
       file_idx = compile_unit->GetSupportFiles().FindFileIndex(file_idx + 1,
                                                                file_spec, true);
     }
