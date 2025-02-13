@@ -96,12 +96,12 @@ size_t WasmProcess::DoReadMemory(lldb::addr_t vm_addr,
                                  size_t size,
                                  lldb_private::Status& error) {
   if (!proxy_) {
-    error.SetErrorString("Proxy not initialized");
+    error = lldb_private::Status::FromErrorString("Proxy not initialized");
     return 0;
   }
   auto result = proxy_->ReadMemory(vm_addr, buf, size);
   if (!result) {
-    error.SetErrorString(llvm::toString(result.takeError()));
+    error = lldb_private::Status(llvm::toString(result.takeError()));
     return 0;
   }
   return *result;

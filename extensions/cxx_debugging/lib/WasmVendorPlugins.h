@@ -84,7 +84,7 @@ class WasmPlatform : public lldb_private::Platform {
                          lldb_private::Debugger& debugger,
                          lldb_private::Target* target,
                          lldb_private::Status& error) final {
-    error.SetErrorString("Cannot attach to processes");
+    error = lldb_private::Status::FromErrorString("Cannot attach to processes");
     return {};
   }
 };
