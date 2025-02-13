@@ -291,6 +291,7 @@ class SymbolFileWasmDWARF : public lldb_private::plugin::dwarf::SymbolFileDWARF 
 
   std::shared_ptr<lldb_private::Type> externref_type_sp;
 
+  /* TODO
   lldb::TypeSP FindDefinitionTypeForDWARFDeclContext(
       const DWARFDeclContext& dwarf_decl_ctx) override {
     // We define type externref_t as a 32-bit integer, so as to be
@@ -319,6 +320,7 @@ class SymbolFileWasmDWARF : public lldb_private::plugin::dwarf::SymbolFileDWARF 
     return SymbolFileDWARF::FindDefinitionTypeForDWARFDeclContext(
         dwarf_decl_ctx);
   }
+  */
 
  private:
   WasmValueLoader* current_value_loader_ = nullptr;
