@@ -43,6 +43,7 @@ set_target_properties(SymbolsBackendTests PROPERTIES EXCLUDE_FROM_ALL FALSE)
 target_link_libraries(SymbolsBackendTests PRIVATE
   DWARFSymbols
   -sALLOW_MEMORY_GROWTH=1
+  -sINITIAL_MEMORY=32MB
   -sMODULARIZE=1
   -sENVIRONMENT=web
   -sEXPORT_NAME=createModule

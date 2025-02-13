@@ -64,6 +64,7 @@ target_link_libraries(SymbolsBackend PUBLIC DWARFSymbols)
 target_include_directories(SymbolsBackend PUBLIC
   ${PROJECT_SOURCE_DIR}/third_party/emscripten/system/include)
 target_link_libraries(SymbolsBackend PRIVATE -sMAXIMUM_MEMORY=4GB)
+target_link_libraries(SymbolsBackend PRIVATE -sINITIAL_MEMORY=32MB)
 target_link_libraries(SymbolsBackend PRIVATE -sALLOW_MEMORY_GROWTH=1)
 target_link_libraries(SymbolsBackend PRIVATE -sMODULARIZE=1)
 target_link_libraries(SymbolsBackend PRIVATE -s'EXPORT_NAME=createSymbolsBackend')
