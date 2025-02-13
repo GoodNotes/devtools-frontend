@@ -11,7 +11,7 @@
 #include "lldb/Core/Address.h"
 #include "lldb/Core/AddressRange.h"
 #include "lldb/Core/Debugger.h"
-#include "lldb/Core/FileSpecList.h"
+#include "lldb/Utility/FileSpecList.h"
 #include "lldb/Core/Module.h"
 #include "lldb/Core/Section.h"
 #include "lldb/Symbol/Block.h"
@@ -142,15 +142,16 @@ SourceInfo WasmModule::GetSourceScripts() const {
   for (size_t idx = 0; idx < module_->GetNumCompileUnits(); idx++) {
     auto compile_unit = module_->GetCompileUnitAtIndex(idx);
     for (auto f : compile_unit->GetSupportFiles()) {
-      auto dir = f.GetDirectory().GetStringRef();
-      auto filename = f.GetFilename().GetStringRef();
+      const lldb_private::FileSpec &spec = f->GetSpecOnly();
+      auto dir = spec.GetDirectory().GetStringRef();
+      auto filename = spec.GetFilename().GetStringRef();
       if (filename.empty()) {
         continue;
       }
       if (!all_files.insert(std::make_pair(dir, filename)).second) {
         continue;
       }
-      compile_units.insert(f.GetPath());
+      compile_units.insert(spec.GetPath());
     }
 
     // Cast user data to DwarfUnit
@@ -279,7 +280,7 @@ llvm::SmallSet<SourceLocation, 1> WasmModule::GetSourceLocationFromOffset(
       lldb::eSymbolContextBlock | lldb::eSymbolContextLineEntry, sc, addr);
   if ((resolved & lldb::eSymbolContextLineEntry) && sc.line_entry.IsValid() &&
       sc.line_entry.line > 0) {
-    lines.insert({sc.line_entry.file.GetPath(), sc.line_entry.line,
+    lines.insert({sc.line_entry.GetFile().GetPath(), sc.line_entry.line,
                   sc.line_entry.column});
   }
   return lines;
