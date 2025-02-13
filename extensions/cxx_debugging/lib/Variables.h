@@ -43,6 +43,7 @@ class ObjectInfoBase {
 class SubObjectInfo : public ObjectInfoBase {
  public:
   static llvm::SmallVector<SubObjectInfo, 1> GetMembers(
+      lldb_private::ExecutionContext& context,
       lldb_private::CompilerType type);
 
   SubObjectInfo(llvm::StringRef name,

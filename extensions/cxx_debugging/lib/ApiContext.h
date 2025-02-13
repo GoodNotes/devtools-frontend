@@ -100,9 +100,11 @@ class ApiContext : public DWARFSymbolsApi {
   void DeleteModule(llvm::StringRef id);
 
   api::TypeInfo GetApiTypeInfo(
+      lldb_private::ExecutionContext& context,
       lldb_private::CompilerType type,
       const llvm::SmallVectorImpl<SubObjectInfo>& member_info);
   llvm::Expected<std::vector<api::TypeInfo>> GetApiTypeInfos(
+      lldb_private::ExecutionContext& context,
       lldb_private::CompilerType type,
       int32_t required_type_depth);
   std::string GetTypeId(lldb_private::CompilerType type);

@@ -118,6 +118,7 @@ class WasmModule {
       lldb::addr_t frame_offset,
       uint32_t inline_frame_index,
       llvm::StringRef expression,
+      lldb::ProcessSP process,
       const api::DebuggerProxy& proxy) const;
 };
 

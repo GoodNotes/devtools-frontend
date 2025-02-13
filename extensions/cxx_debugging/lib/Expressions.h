@@ -38,8 +38,13 @@ struct ExpressionResult {
   std::optional<size_t> address;
 };
 
+llvm::Expected<lldb::ProcessSP> CreateProcess(const WasmModule& module,
+                                             const api::DebuggerProxy& proxy,
+                                             size_t frame_offset);
+
 llvm::Expected<ExpressionResult> InterpretExpression(
     const WasmModule& module,
+    lldb::ProcessSP process,
     lldb_private::TypeSystem& type_system,
     lldb_private::SymbolContext& sc,
     size_t frame_offset,

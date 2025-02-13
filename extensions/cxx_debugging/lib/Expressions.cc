@@ -95,15 +95,9 @@ std::optional<llvm::Error> CheckError(lldb::SBValue value) {
   return llvm::createStringError(llvm::inconvertibleErrorCode(), message);
 }
 
-llvm::Expected<ExpressionResult> InterpretExpression(
-    const WasmModule& module,
-    lldb_private::TypeSystem& type_system,
-    lldb_private::SymbolContext& sc,
-    size_t frame_offset,
-    size_t inline_frame_index,
-    lldb_private::Address addr,
-    llvm::StringRef expression,
-    const api::DebuggerProxy& proxy) {
+llvm::Expected<lldb::ProcessSP> CreateProcess(const WasmModule& module,
+                                             const api::DebuggerProxy& proxy,
+                                             size_t frame_offset) {
   auto target = module.Target()->shared_from_this();
   lldb::ListenerSP listener = lldb_private::Listener::MakeListener("wasm32");
 
@@ -122,6 +116,20 @@ llvm::Expected<ExpressionResult> InterpretExpression(
       ->SetProxyAndFrameOffset(proxy, frame_offset);
   process->UpdateThreadListIfNeeded();
   process->GetThreadList().SetSelectedThreadByID(0);
+  return process;
+}
+
+llvm::Expected<ExpressionResult> InterpretExpression(
+    const WasmModule& module,
+    lldb::ProcessSP process,
+    lldb_private::TypeSystem& type_system,
+    lldb_private::SymbolContext& sc,
+    size_t frame_offset,
+    size_t inline_frame_index,
+    lldb_private::Address addr,
+    llvm::StringRef expression,
+    const api::DebuggerProxy& proxy) {
+  auto target = module.Target()->shared_from_this();
   auto thread = std::static_pointer_cast<WasmThread>(
       process->GetThreadList().GetSelectedThread());
 

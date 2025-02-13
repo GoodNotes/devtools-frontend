@@ -9,6 +9,9 @@
 #include "api.h"
 
 #include "lldb/Symbol/CompilerType.h"
+#include "lldb/Target/Process.h"
+#include "lldb/Target/ExecutionContext.h"
+#include "lldb/Target/ExecutionContextScope.h"
 #include "lldb/Utility/ConstString.h"
 #include "lldb/lldb-enumerations.h"
 #include "lldb/lldb-types.h"
@@ -358,6 +361,7 @@ void ApiContext::DeleteModule(llvm::StringRef id) {
 }
 
 api::TypeInfo ApiContext::GetApiTypeInfo(
+    lldb_private::ExecutionContext& exe_ctx,
     lldb_private::CompilerType type,
     const llvm::SmallVectorImpl<SubObjectInfo>& member_info) {
   std::vector<api::Enumerator> enumerators;
@@ -371,9 +375,12 @@ api::TypeInfo ApiContext::GetApiTypeInfo(
     return true;
   });
 
-  auto size = type.GetByteSize(nullptr);
+  lldb::ProcessSP process_sp(exe_ctx.GetProcessSP());
+  lldb_private::ExecutionContextScope *scope = process_sp.get();
+
+  auto size = type.GetByteSize(scope);
   uint64_t array_size = 0;
-  size_t alignment = type.GetTypeBitAlign(nullptr).value_or(0) / 8;
+  size_t alignment = type.GetTypeBitAlign(scope).value_or(0) / 8;
   bool has_elements = type.IsPointerOrReferenceType() ||
                       type.IsArrayType(nullptr, &array_size, nullptr) ||
                       type.IsVectorType(nullptr, &array_size);
@@ -403,6 +410,7 @@ api::TypeInfo ApiContext::GetApiTypeInfo(
 }
 
 llvm::Expected<std::vector<api::TypeInfo>> ApiContext::GetApiTypeInfos(
+    lldb_private::ExecutionContext& context,
     lldb_private::CompilerType type,
     int32_t required_type_depth) {
   std::deque<std::pair<lldb_private::CompilerType, int32_t>> queue{{type, 0}};
@@ -421,13 +429,13 @@ llvm::Expected<std::vector<api::TypeInfo>> ApiContext::GetApiTypeInfos(
       continue;
     }
 
-    auto member_info = SubObjectInfo::GetMembers(type);
+    auto member_info = SubObjectInfo::GetMembers(context, type);
     for (const auto& member : member_info) {
       if (!visited_types.contains(member.Type().GetOpaqueQualType())) {
         queue.push_back({member.Type(), depth + 1});
       }
     }
-    type_infos.push_back(GetApiTypeInfo(type, member_info));
+    type_infos.push_back(GetApiTypeInfo(context, type, member_info));
   }
   return type_infos;
 }
@@ -450,16 +458,19 @@ std::optional<lldb_private::CompilerType> ApiContext::GetTypeFromId(
 
 struct EvalVisitor {
   ApiContext& context;
+  lldb::ProcessSP process;
   lldb_private::CompilerType type;
   std::optional<size_t> address;
 
   EvalVisitor(ApiContext& context,
+              lldb::ProcessSP process,
               lldb_private::CompilerType type,
               std::optional<size_t> address)
-      : context(context), type(type), address(address) {}
+      : context(context), process(process), type(type), address(address) {}
 
   api::EvaluateExpressionResponse MakeResponse() {
-    auto member_type_infos = context.GetApiTypeInfos(type, 0);
+    lldb_private::ExecutionContext exe_ctx(process);
+    auto member_type_infos = context.GetApiTypeInfos(exe_ctx, type, 0);
     if (!member_type_infos) {
       return api::EvaluateExpressionResponse().SetError(
           MakeEvalError(member_type_infos.takeError()));
@@ -595,15 +606,22 @@ api::EvaluateExpressionResponse ApiContext::EvaluateExpression(
     return api::EvaluateExpressionResponse().SetError(
         MakeNotFoundError(raw_module_id));
   }
+  DebuggerProxy proxy{debug_proxy};
+  auto process = ::symbols_backend::CreateProcess(*module, proxy,
+                                                  location.GetCodeOffset());
+  if (!process) {
+    return api::EvaluateExpressionResponse().SetError(
+        MakeError(Error::Code::kEvalError, process.takeError()));
+  }
   auto result = module->InterpretExpression(
       location.GetCodeOffset(), location.GetInlineFrameIndex(), expression,
-      DebuggerProxy{debug_proxy});
+      *process, proxy);
   if (!result) {
     return api::EvaluateExpressionResponse().SetError(
         MakeError(Error::Code::kEvalError, result.takeError()));
   }
 
-  return std::visit(EvalVisitor(*this, result->type, result->address),
+  return std::visit(EvalVisitor(*this, *process, result->type, result->address),
                     result->value);
 }
 

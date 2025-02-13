@@ -38,23 +38,26 @@ static lldb_private::CompilerType BaseType(lldb_private::CompilerType t) {
   return t;
 }
 
-static void CreateMemberInfo(llvm::SmallVectorImpl<SubObjectInfo>& members,
+static void CreateMemberInfo(lldb_private::ExecutionContext& exe_ctx,
+                             llvm::SmallVectorImpl<SubObjectInfo>& members,
                              lldb_private::CompilerType type) {
+  lldb_private::ExecutionContextScope *scope = exe_ctx.GetProcessSP().get();
+
   type = BaseType(type);
 
   for (size_t base_class = 0, e = type.GetNumDirectBaseClasses();
        base_class < e; ++base_class) {
-    CreateMemberInfo(members,
+    CreateMemberInfo(exe_ctx, members,
                      type.GetDirectBaseClassAtIndex(base_class, nullptr));
   }
 
   for (size_t base_class = 0, e = type.GetNumVirtualBaseClasses();
        base_class < e; ++base_class) {
-    CreateMemberInfo(members,
+    CreateMemberInfo(exe_ctx, members,
                      type.GetVirtualBaseClassAtIndex(base_class, nullptr));
   }
 
-  for (size_t child = 0, e = type.GetNumFields(); child < e; ++child) {
+  for (size_t child = 0, e = type.GetNumFields(&exe_ctx); child < e; ++child) {
     std::string child_name;
     uint64_t bit_offset;
     auto child_type =
@@ -69,6 +72,7 @@ static void CreateMemberInfo(llvm::SmallVectorImpl<SubObjectInfo>& members,
 }
 
 /*static */ llvm::SmallVector<SubObjectInfo, 1> SubObjectInfo::GetMembers(
+    lldb_private::ExecutionContext& exe_ctx,
     lldb_private::CompilerType type) {
   type = BaseType(type);
 
@@ -91,7 +95,7 @@ static void CreateMemberInfo(llvm::SmallVectorImpl<SubObjectInfo>& members,
 
   if (type.IsAggregateType()) {
     llvm::SmallVector<SubObjectInfo, 1> members;
-    CreateMemberInfo(members, type);
+    CreateMemberInfo(exe_ctx, members, type);
     return members;
   }
   return {};

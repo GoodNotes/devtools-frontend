@@ -547,6 +547,7 @@ llvm::Expected<ExpressionResult> WasmModule::InterpretExpression(
     lldb::addr_t frame_offset,
     uint32_t inline_frame_index,
     llvm::StringRef expression,
+    lldb::ProcessSP process,
     const api::DebuggerProxy& proxy) const {
   lldb_private::SymbolContext sc;
   lldb_private::Address addr;
@@ -571,7 +572,7 @@ llvm::Expected<ExpressionResult> WasmModule::InterpretExpression(
     return type_system.takeError();
   }
   return ::symbols_backend::InterpretExpression(
-      *this, **type_system, sc, frame_offset, inline_frame_index, addr,
+      *this, process, **type_system, sc, frame_offset, inline_frame_index, addr,
       expression, proxy);
 }
 }  // namespace symbols_backend
