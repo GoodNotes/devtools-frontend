@@ -91,6 +91,10 @@ deps = {
     'url': Var('lldb_eval_url') + '@' + Var('lldb_eval_revision'),
     'condition': 'checkout_cxx_debugging_extension_deps == True',
   },
+  'extensions/cxx_debugging/third_party/swift/src': {
+    'url': 'https://github.com/kateinoigakukun/swift.git@22c48b6cf8507fe111de643139244eab4d6e50e8',
+    'condition': 'checkout_cxx_debugging_extension_deps == True',
+  },
 
   'buildtools': {
     'url': Var('buildtools_url') + '@' + Var('buildtools_revision'),
