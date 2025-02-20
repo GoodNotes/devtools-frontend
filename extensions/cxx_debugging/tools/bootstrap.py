@@ -137,6 +137,7 @@ def stage2(source_dir, stage1_dir, OPTIONS):
         '-Derrc_exit_code__TRYRUN_OUTPUT=0',
         '-DCMAKE_BUILD_TYPE={build_type}'.format(**cmake_settings),
         '-DCMAKE_TOOLCHAIN_FILE={toolchain_file}'.format(**cmake_settings),
+        '-DLLVM_INCLUDE_BENCHMARKS=OFF',
         '-DLLVM_DWP={llvm_dwp}'.format(**cmake_settings),
         '-DLLVM_TABLEGEN={llvm_tblgen}'.format(**cmake_settings),
         '-DCLANG_TABLEGEN={clang_tblgen}'.format(**cmake_settings),
