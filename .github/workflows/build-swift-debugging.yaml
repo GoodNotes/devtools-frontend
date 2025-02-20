@@ -6,6 +6,7 @@ on:
 jobs:
   build-extension:
     runs-on: ubuntu-22.04
+    timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
       - name: Create .gclient file
