@@ -190,6 +190,10 @@ def stage2(source_dir, stage1_dir, OPTIONS):
     maybe_cmake(binary_dir, cmake_args, OPTIONS.verbose)
 
     num_cores = os.cpu_count()
+    # HACK: throttle the number of cores to avoid OOM on the CI
+    if os.getenv('CI'):
+        num_cores = min(num_cores, 1)
+
     env = os.environ.copy()
 
     if not OPTIONS.no_check:
