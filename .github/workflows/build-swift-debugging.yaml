@@ -1,0 +1,41 @@
+name: Build Swift Debugging Extension
+on:
+  push:
+    branches:
+      - swift-debugging
+jobs:
+  build-extension:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create .gclient file
+        run: |
+          cat <<EOF > "${{ runner.workspace }}/.gclient"
+          solutions = [
+           {
+             "name"        : "devtools-frontend",
+             "url"         : "https://github.com/GoodNotes/devtools-frontend",
+             "deps_file"   : "DEPS",
+             "managed"     : True,
+             "custom_deps" : {
+             },
+             "custom_vars": {
+               "checkout_cxx_debugging_extension_deps": True
+             },
+           }
+          ]
+          EOF
+      - name: Activate depot_tools
+        run: |
+          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git "${{ runner.workspace }}/depot_tools"
+          echo "${{ runner.workspace }}/depot_tools" >> $GITHUB_PATH
+      - run: gclient sync
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: ./tools/bootstrap.py ../../out -no-check -release-version 90001 -patch-level 0
+        working-directory: ./extensions/cxx_debugging/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cxx_debugging_extension
+          path: ./out/DevTools_CXX_Debugging.stage2/cxx_debugging_extension-*.zip
