@@ -18,6 +18,16 @@ jobs:
             docker rmi $(docker image ls -aq)
           fi
           df -h
+
+      - name: Increase swapfile
+        run: |
+          sudo swapoff -a
+          sudo fallocate -l 10G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+          sudo swapon --show
+
       - uses: actions/checkout@v4
       - name: Create .gclient file
         run: |
