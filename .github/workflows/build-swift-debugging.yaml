@@ -41,6 +41,14 @@ jobs:
              "custom_deps" : {
              },
              "custom_vars": {
+               "llvm_url": "https://github.com/kateinoigakukun/llvm-project.git",
+               # swift-devtools/swift-DEVELOPMENT-SNAPSHOT-2025-02-14-a
+               "llvm_revision": "8cc38add382f5dea6beaf8d2ecab7cb0810c77ac",
+
+               "lldb_eval_url": "https://github.com/kateinoigakukun/lldb-eval.git",
+               # yt/swift-debug
+               "lldb_eval_revision": "a0e14719183dbfb957b16494b7ce52fe3760e886",
+
                "checkout_cxx_debugging_extension_deps": True
              },
            }
@@ -50,7 +58,8 @@ jobs:
         run: |
           git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git "${{ runner.workspace }}/depot_tools"
           echo "${{ runner.workspace }}/depot_tools" >> $GITHUB_PATH
-      - run: gclient sync
+      - run: gclient sync --verbose
+        working-directory: "${{ runner.workspace }}"
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
