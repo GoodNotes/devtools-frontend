@@ -8,6 +8,16 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 360
     steps:
+      - name: Free disk space
+        run: |
+          df -h
+          sudo rm -rf /opt/hostedtoolcache
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /usr/local/.ghcup
+          sudo apt clean
+          if docker info > /dev/null 2>&1; then
+            docker rmi $(docker image ls -aq)
+          fi
+          df -h
       - uses: actions/checkout@v4
       - name: Create .gclient file
         run: |
