@@ -684,7 +684,7 @@ export class ExtensionOptions extends HTMLElement {
             </label>`);
 
     const output = html`
-    <h1>C/C++ DevTools Support Options</h1>
+    <h1>Swift DevTools Support Options</h1>
 
     <h2>Log plugin API calls</h2>
     ${until(logPluginApiCalls, html`<span>Loading...</span>`)}

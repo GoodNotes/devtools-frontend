@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "version": "@CMAKE_PROJECT_VERSION@",
-  "name": "C/C++ DevTools Support (DWARF)",
-  "description": "DevTools Plugin for debugging C/C++ WebAssembly applications (using DWARF debug information). BETA version, use at your own risk.",
+  "name": "Swift DevTools Support (DWARF)",
+  "description": "DevTools Plugin for debugging Swift WebAssembly applications (using DWARF debug information). BETA version, use at your own risk.",
   "host_permissions": [
     "https://*/",
     "http://*/"
