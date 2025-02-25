@@ -323,6 +323,10 @@ export class SBValue implements Value, LazyObject {
     }
   }
 
+  onRelease(): void {
+    this.dwarfSymbolsPlugin.ReleaseValue(this.value);
+  }
+
   get location(): number {
     return this._location ?? 0;
   }
@@ -580,6 +584,7 @@ export class CXXValue implements Value, LazyObject {
 export interface LazyObject {
   getProperties(): Promise<{name: string, property: LazyObject}[]>;
   asRemoteObject(): Promise<Chrome.DevTools.RemoteObject|Chrome.DevTools.ForeignObject>;
+  onRelease?(): void;
 }
 
 export function primitiveObject<T>(
@@ -636,6 +641,10 @@ export class LazyObjectStore {
   }
 
   release(objectId: string): void {
+    const lazyObject = this.objects.get(objectId);
+    if (lazyObject) {
+      lazyObject.onRelease?.();
+    }
     this.objects.delete(objectId);
   }
 

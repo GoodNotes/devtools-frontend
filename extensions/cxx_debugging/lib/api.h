@@ -705,6 +705,10 @@ class DWARFSymbolsApi {
     Sbvalue value
   ) = 0;
 
+  virtual void ReleaseValue(
+    Sbvalue value
+  ) = 0;
+
   virtual GetValueInfoResponse GetValueInfo(
     Sbvalue value
   ) = 0;

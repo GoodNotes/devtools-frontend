@@ -97,6 +97,8 @@ class ApiContext : public DWARFSymbolsApi {
       std::string expression,
       emscripten::val debug_proxy) final;
 
+  void ReleaseValue(Sbvalue value) override;
+
  private:
   llvm::StringMap<std::shared_ptr<WasmModule>> modules_;
   llvm::StringMap<lldb_private::CompilerType> types_;

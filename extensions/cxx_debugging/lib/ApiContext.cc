@@ -684,6 +684,10 @@ api::EvaluateExpressionResponse ApiContext::EvaluateExpression(
   return response;
 }
 
+void ApiContext::ReleaseValue(api::Sbvalue rawValue) {
+  arena.Release(rawValue);
+}
+
 api::GetValueSummaryResponse ApiContext::GetValueSummary(api::Sbvalue rawValue) {
   auto value = arena.GetValue(rawValue);
 

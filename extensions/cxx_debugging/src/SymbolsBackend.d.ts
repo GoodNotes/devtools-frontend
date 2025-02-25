@@ -164,6 +164,7 @@ export interface DWARFSymbolsPlugin extends EmbindObject {
   GetInlinedCalleesRanges(rawModuleId: string,codeOffset: number): GetInlinedCalleesRangesResponse;
   GetMappedLines(rawModuleId: string,sourceFileURL: string): GetMappedLinesResponse;
   GetValueSummary(value: Sbvalue): GetValueSummaryResponse;
+  ReleaseValue(value: Sbvalue): void;
   GetValueInfo(value: Sbvalue): GetValueInfoResponse;
   GetValueChildren(value: Sbvalue): GetValueChildrenResponse;
   EvaluateExpression(location: RawLocation,stopId: string,expression: string,debugProxy: unknown): EvaluateExpressionResponse;

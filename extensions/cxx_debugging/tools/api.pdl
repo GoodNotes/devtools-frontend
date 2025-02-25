@@ -225,6 +225,10 @@ domain symbols_backend
       SBValue value
       string name
 
+  command releaseValue
+    parameters
+      SBValue value
+
   command getValueInfo
     parameters
       SBValue value

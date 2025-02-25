@@ -293,6 +293,8 @@ EMSCRIPTEN_BINDINGS(DWARFSymbolsPlugin) {
                 &symbols_backend::DWARFSymbolsPlugin::GetMappedLines)
       .function("GetValueSummary",
                 &symbols_backend::DWARFSymbolsPlugin::GetValueSummary)
+      .function("ReleaseValue",
+                &symbols_backend::DWARFSymbolsPlugin::ReleaseValue)
       .function("GetValueInfo",
                 &symbols_backend::DWARFSymbolsPlugin::GetValueInfo)
       .function("GetValueChildren",
