@@ -211,6 +211,7 @@ domain symbols_backend
 
   type SBValue extends object
     properties
+      integer handle
 
   command getValueSummary
     parameters
@@ -223,8 +224,17 @@ domain symbols_backend
     properties
       SBValue value
       string name
-      string displayValue
-  
+
+  command getValueInfo
+    parameters
+      SBValue value
+    returns
+      boolean hasChildren
+      optional integer location
+      integer size
+      string typeName
+      optional Error error
+
   command getValueChildren
     parameters
       SBValue value

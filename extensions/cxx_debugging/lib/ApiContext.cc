@@ -8,6 +8,8 @@
 #include "WasmModule.h"
 #include "api.h"
 
+#include "lldb/API/SBAddress.h"
+#include "lldb/API/SBValue.h"
 #include "lldb/Symbol/CompilerType.h"
 #include "lldb/Target/Process.h"
 #include "lldb/Target/ExecutionContext.h"
@@ -35,6 +37,7 @@
 #include <deque>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -599,6 +602,33 @@ llvm::Expected<DebuggerProxy::WasmValue> DebuggerProxy::GetOperand(
   return readWasmValue(proxy_.call<emscripten::val>("getOperand", index));
 }
 
+class SBValueArena {
+  struct Owner {
+    lldb::SBValue value;
+    Owner(lldb::SBValue value) : value(value) {}
+  };
+public:
+  api::Sbvalue AddValue(lldb::SBValue value) {
+    // Leak the value
+    auto *owner = new Owner(value);
+    static_assert(sizeof(Owner*) == sizeof(int32_t));
+    return api::Sbvalue().SetHandle(reinterpret_cast<int32_t>(owner));
+  }
+
+  lldb::SBValue GetValue(api::Sbvalue handle) {
+    auto *owner = reinterpret_cast<Owner*>(handle.GetHandle());
+    return owner->value;
+  }
+
+  void Release(api::Sbvalue handle) {
+    auto *owner = reinterpret_cast<Owner*>(handle.GetHandle());
+    delete owner;
+  }
+};
+
+static SBValueArena arena;
+
+
 api::EvaluateExpressionResponse ApiContext::EvaluateExpression(
     RawLocation location,
     std::string expression,
@@ -624,8 +654,80 @@ api::EvaluateExpressionResponse ApiContext::EvaluateExpression(
         MakeError(Error::Code::kEvalError, result.takeError()));
   }
 
-  return std::visit(EvalVisitor(*this, *process, result->type, result->address, result->display_value),
+  auto response = std::visit(EvalVisitor(*this, *process, result->type, result->address, result->display_value),
                     result->value);
+  if (result->value_object) {
+    response.SetValue(arena.AddValue(*result->value_object));
+  }
+  return response;
+}
+
+api::GetValueSummaryResponse ApiContext::GetValueSummary(api::Sbvalue rawValue) {
+  auto value = arena.GetValue(rawValue);
+
+  // Check the value is still valid.
+  if (!value.IsValid()) {
+    return api::GetValueSummaryResponse()
+        .SetDisplayValue(std::nullopt)
+        .SetError(MakeError(Error::Code::kEvalError, "Invalid SBValue passed to GetValueSummary"));
+  }
+
+  auto tryStringify = [&](lldb::SBValue value) -> std::optional<std::string> {
+    // Use GetSummary() if available.
+    if (const char *summary = value.GetSummary()) {
+      return std::string(summary);
+    }
+    // If the value doesn't have a summary, use GetValue()
+    if (const char *value_str = value.GetValue()) {
+      return std::string(value_str);
+    }
+    return std::nullopt;
+  };
+
+  // First try to stringify the value itself.
+  if (auto display_value = tryStringify(value)) {
+    return api::GetValueSummaryResponse().SetDisplayValue(display_value);
+  }
+
+  // If the value is a pointer or reference, dereference it and try again.
+  if (value.GetType().IsPointerType() || value.GetType().IsReferenceType()) {
+    if (auto display_value = tryStringify(value.Dereference())) {
+      return api::GetValueSummaryResponse().SetDisplayValue(display_value);
+    }
+  }
+
+  return api::GetValueSummaryResponse().SetDisplayValue(std::nullopt);
+}
+
+api::GetValueChildrenResponse ApiContext::GetValueChildren(api::Sbvalue rawValue) {
+  auto value = arena.GetValue(rawValue);
+  api::GetValueChildrenResponse response;
+  std::vector<api::ValueChild> children;
+  for (size_t i = 0; i < value.GetNumChildren(); i++) {
+    lldb::SBValue child = value.GetChildAtIndex(i);
+    api::ValueChild childResponse;
+    const char *name = child.GetName();
+    if (!name) {
+      name = "<null>";
+    }
+    childResponse.SetValue(arena.AddValue(child));
+    childResponse.SetName(std::string(name));
+    children.push_back(childResponse);
+  }
+  return response.SetChildren(std::move(children));
+}
+
+api::GetValueInfoResponse ApiContext::GetValueInfo(api::Sbvalue rawValue) {
+  auto value = arena.GetValue(rawValue);
+  api::GetValueInfoResponse response;
+  response.SetHasChildren(value.GetNumChildren() > 0);
+  response.SetSize(value.GetByteSize());
+  response.SetTypeName(value.GetType().GetName());
+
+  if (auto address_of = value.AddressOf()) {
+    response.SetLocation(address_of.GetValueAsUnsigned());
+  }
+  return response;
 }
 
 }  // namespace api

@@ -169,13 +169,13 @@ EMSCRIPTEN_BINDINGS(DWARFSymbolsPlugin) {
 
   emscripten::class_<symbols_backend::api::Sbvalue>("Sbvalue")
       .constructor<>()
+      .property("handle", &symbols_backend::api::Sbvalue::GetHandle, &symbols_backend::api::Sbvalue::SetHandle)
       ;
 
   emscripten::class_<symbols_backend::api::ValueChild>("ValueChild")
       .constructor<>()
       .property("value", &symbols_backend::api::ValueChild::GetValue, &symbols_backend::api::ValueChild::SetValue)
       .property("name", &symbols_backend::api::ValueChild::GetName, &symbols_backend::api::ValueChild::SetName)
-      .property("displayValue", &symbols_backend::api::ValueChild::GetDisplayValue, &symbols_backend::api::ValueChild::SetDisplayValue)
       ;
 
   emscripten::class_<symbols_backend::api::AddRawModuleResponse>("AddRawModuleResponse")
@@ -234,6 +234,15 @@ EMSCRIPTEN_BINDINGS(DWARFSymbolsPlugin) {
       .property("error", OptionalGetter(&symbols_backend::api::GetValueSummaryResponse::GetError), OptionalSetter(&symbols_backend::api::GetValueSummaryResponse::SetError))
       ;
 
+  emscripten::class_<symbols_backend::api::GetValueInfoResponse>("GetValueInfoResponse")
+      .constructor<>()
+      .property("hasChildren", &symbols_backend::api::GetValueInfoResponse::GetHasChildren, &symbols_backend::api::GetValueInfoResponse::SetHasChildren)
+      .property("location", OptionalGetter(&symbols_backend::api::GetValueInfoResponse::GetLocation), OptionalSetter(&symbols_backend::api::GetValueInfoResponse::SetLocation))
+      .property("size", &symbols_backend::api::GetValueInfoResponse::GetSize, &symbols_backend::api::GetValueInfoResponse::SetSize)
+      .property("typeName", &symbols_backend::api::GetValueInfoResponse::GetTypeName, &symbols_backend::api::GetValueInfoResponse::SetTypeName)
+      .property("error", OptionalGetter(&symbols_backend::api::GetValueInfoResponse::GetError), OptionalSetter(&symbols_backend::api::GetValueInfoResponse::SetError))
+      ;
+
   emscripten::class_<symbols_backend::api::GetValueChildrenResponse>("GetValueChildrenResponse")
       .constructor<>()
       .property("children", &symbols_backend::api::GetValueChildrenResponse::GetChildren, &symbols_backend::api::GetValueChildrenResponse::SetChildren)
@@ -284,6 +293,8 @@ EMSCRIPTEN_BINDINGS(DWARFSymbolsPlugin) {
                 &symbols_backend::DWARFSymbolsPlugin::GetMappedLines)
       .function("GetValueSummary",
                 &symbols_backend::DWARFSymbolsPlugin::GetValueSummary)
+      .function("GetValueInfo",
+                &symbols_backend::DWARFSymbolsPlugin::GetValueInfo)
       .function("GetValueChildren",
                 &symbols_backend::DWARFSymbolsPlugin::GetValueChildren)
       .function("EvaluateExpression",

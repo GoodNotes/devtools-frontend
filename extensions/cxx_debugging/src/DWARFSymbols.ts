@@ -16,15 +16,8 @@ import {
 import type * as SymbolsBackend from './SymbolsBackend.js';
 import createSymbolsBackend from './SymbolsBackend.js';
 import type {HostInterface} from './WorkerRPC.js';
+import { createEmbindPool, mapVector, stringifyErrorCode } from './EmbindUtils.js';
 
-function mapVector<T, ApiT>(vector: SymbolsBackend.Vector<ApiT>, callback: (apiElement: ApiT) => T): T[] {
-  const elements: T[] = [];
-  for (let i = 0; i < vector.size(); ++i) {
-    const element = vector.get(i);
-    elements.push(callback(element));
-  }
-  return elements;
-}
 
 interface ScopeInfo {
   type: 'GLOBAL'|'LOCAL'|'PARAMETER';
@@ -68,58 +61,8 @@ class ModuleInfo {
   }
 
   stringifyErrorCode(errorCode: SymbolsBackend.ErrorCode): string {
-    switch (errorCode) {
-      case this.backend.ErrorCode.PROTOCOL_ERROR:
-        return 'ProtocolError:';
-      case this.backend.ErrorCode.MODULE_NOT_FOUND_ERROR:
-        return 'ModuleNotFoundError:';
-      case this.backend.ErrorCode.INTERNAL_ERROR:
-        return 'InternalError';
-      case this.backend.ErrorCode.EVAL_ERROR:
-        return 'EvalError';
-    }
-    throw new Error(`InternalError: Invalid error code ${errorCode}`);
+    return stringifyErrorCode(errorCode, this.backend);
   }
-}
-
-export function createEmbindPool(): {
-  flush(): void,
-  manage<T extends SymbolsBackend.EmbindObject|undefined>(object: T): T,
-  unmanage<T extends SymbolsBackend.EmbindObject>(object: T): boolean,
-} {
-  class EmbindObjectPool {
-    private objectPool: SymbolsBackend.EmbindObject[] = [];
-
-    flush(): void {
-      for (const object of this.objectPool.reverse()) {
-        object.delete();
-      }
-      this.objectPool = [];
-    }
-
-    manage<T extends SymbolsBackend.EmbindObject|undefined>(object: T): T {
-      if (typeof object !== 'undefined') {
-        this.objectPool.push(object as SymbolsBackend.EmbindObject);
-      }
-      return object;
-    }
-
-    unmanage<T extends SymbolsBackend.EmbindObject>(object: T): boolean {
-      const index = this.objectPool.indexOf(object);
-      if (index > -1) {
-        this.objectPool.splice(index, 1);
-        object.delete();
-        return true;
-      }
-      return false;
-    }
-  }
-
-  const pool = new EmbindObjectPool();
-  const manage = pool.manage.bind(pool);
-  const unmanage = pool.unmanage.bind(pool);
-  const flush = pool.flush.bind(pool);
-  return {manage, unmanage, flush};
 }
 
 // Cache the underlying WebAssembly module after the first instantiation
@@ -448,6 +391,7 @@ export class DWARFLanguageExtensionPlugin implements Chrome.DevTools.LanguageExt
     data?: number[],
     displayValue?: string,
     memoryAddress?: number,
+    value?: SymbolsBackend.Sbvalue,
   }|null> {
     const {manage, unmanage, flush} = createEmbindPool();
     const moduleInfo = await this.getModuleInfo(context.rawModuleId);
@@ -477,9 +421,9 @@ export class DWARFLanguageExtensionPlugin implements Chrome.DevTools.LanguageExt
 
       const typeInfos = mapVector(manage(typeInfoResult.typeInfos), typeInfo => fromApiTypeInfo(manage(typeInfo)));
       const root = fromApiTypeInfo(manage(typeInfoResult.root));
-      const {location, displayValue, memoryAddress} = typeInfoResult;
+      const {location, displayValue, memoryAddress, value } = typeInfoResult;
       const data = typeInfoResult.data ? mapVector(manage(typeInfoResult.data), n => n) : undefined;
-      return {typeInfos, root, location, data, displayValue, memoryAddress};
+      return {typeInfos, root, location, data, displayValue, memoryAddress, value};
 
       function fromApiTypeInfo(apiTypeInfo: SymbolsBackend.TypeInfo): Formatters.TypeInfo {
         const apiMembers = manage(apiTypeInfo.members);
@@ -549,6 +493,10 @@ export class DWARFLanguageExtensionPlugin implements Chrome.DevTools.LanguageExt
     }
 
     const wasm = new Formatters.HostWasmInterface(this.hostInterface, stopId);
+    if (valueInfo.value) {
+      const moduleInfo = await this.getModuleInfo(context.rawModuleId);
+      return new Formatters.SBValue(this.lazyObjects, valueInfo.value, moduleInfo.backend, moduleInfo.dwarfSymbolsPlugin).asRemoteObject();
+    }
     const cxxObject = await Formatters.CXXValue.create(this.lazyObjects, wasm, wasm.view, valueInfo);
     if (!cxxObject) {
       return {

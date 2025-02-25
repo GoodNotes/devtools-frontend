@@ -302,17 +302,17 @@ llvm::Expected<ExpressionResult> InterpretExpression(
   if (result.IsPointer()) {
     if (module.Module()->GetArchitecture().GetAddressByteSize() == 4) {
       return ExpressionResult{type, static_cast<uint32_t>(result.GetUInt64()),
-                              address, display_value};
+                              address, display_value, val};
     } else {
       return ExpressionResult{type, static_cast<uint64_t>(result.GetUInt64()),
-                              address, display_value};
+                              address, display_value, val};
     }
   }
 
   auto ptr = result.AddressOf();
   if (ptr.IsValid()) {
     return ExpressionResult{type, reinterpret_cast<void*>(ptr.GetUInt64()),
-                            address, display_value};
+                            address, display_value, val};
   }
 
   return llvm::createStringError(llvm::inconvertibleErrorCode(),

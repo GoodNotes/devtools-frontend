@@ -74,12 +74,12 @@ export interface TypeInfo extends EmbindObject {
 }
 
 export interface Sbvalue extends EmbindObject {
+  handle: number;
 }
 
 export interface ValueChild extends EmbindObject {
   value: Sbvalue;
   name: string;
-  displayValue: string;
 }
 
 export interface AddRawModuleResponse extends EmbindObject {
@@ -129,6 +129,14 @@ export interface GetValueSummaryResponse extends EmbindObject {
   error: Error | undefined;
 }
 
+export interface GetValueInfoResponse extends EmbindObject {
+  hasChildren: boolean;
+  location: number | undefined;
+  size: number;
+  typeName: string;
+  error: Error | undefined;
+}
+
 export interface GetValueChildrenResponse extends EmbindObject {
   children: Vector<ValueChild>;
   error: Error | undefined;
@@ -156,6 +164,7 @@ export interface DWARFSymbolsPlugin extends EmbindObject {
   GetInlinedCalleesRanges(rawModuleId: string,codeOffset: number): GetInlinedCalleesRangesResponse;
   GetMappedLines(rawModuleId: string,sourceFileURL: string): GetMappedLinesResponse;
   GetValueSummary(value: Sbvalue): GetValueSummaryResponse;
+  GetValueInfo(value: Sbvalue): GetValueInfoResponse;
   GetValueChildren(value: Sbvalue): GetValueChildrenResponse;
   EvaluateExpression(location: RawLocation,expression: string,debugProxy: unknown): EvaluateExpressionResponse;
 }
@@ -202,6 +211,7 @@ export interface Module extends EmscriptenModule {
   GetInlinedCalleesRangesResponse: GetInlinedCalleesRangesResponse;
   GetMappedLinesResponse: GetMappedLinesResponse;
   GetValueSummaryResponse: GetValueSummaryResponse;
+  GetValueInfoResponse: GetValueInfoResponse;
   GetValueChildrenResponse: GetValueChildrenResponse;
   EvaluateExpressionResponse: EvaluateExpressionResponse;
 }

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import type {Chrome} from '../../../extension-api/ExtensionAPI.js';
-import {createEmbindPool} from '../src/DWARFSymbols.js';
+import {createEmbindPool} from '../src/EmbindUtils.js';
 
 import type * as LLDBEvalTests from './LLDBEvalTests.js';
 import loadModule from './LLDBEvalTests.js';

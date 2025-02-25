@@ -85,6 +85,12 @@ class ApiContext : public DWARFSymbolsApi {
   GetMappedLinesResponse GetMappedLines(std::string raw_module_id,
                                         std::string source_file_url) override;
 
+  api::GetValueSummaryResponse GetValueSummary(Sbvalue value) override;
+
+  api::GetValueChildrenResponse GetValueChildren(Sbvalue value) override;
+
+  api::GetValueInfoResponse GetValueInfo(Sbvalue value) override;
+
   EvaluateExpressionResponse EvaluateExpression(
       RawLocation location,
       std::string expression,

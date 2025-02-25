@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_CXX_DEBUGGING_EXPRESSIONS_H_
 #define EXTENSIONS_CXX_DEBUGGING_EXPRESSIONS_H_
 
+#include "lldb/API/SBValue.h"
 #include "lldb/Symbol/CompilerType.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/Error.h"
@@ -37,6 +38,7 @@ struct ExpressionResult {
       value;
   std::optional<size_t> address;
   std::optional<std::string> display_value = std::nullopt;
+  std::optional<lldb::SBValue> value_object = std::nullopt;
 };
 
 llvm::Expected<lldb::ProcessSP> CreateProcess(const WasmModule& module,

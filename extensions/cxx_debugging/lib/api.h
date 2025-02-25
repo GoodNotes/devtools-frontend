@@ -291,13 +291,22 @@ class TypeInfo {
 
 class Sbvalue {
  private:
+  int32_t handle_ = {};
+
+ public:
+  Sbvalue() = default;
+  virtual ~Sbvalue() = default;
+  int32_t GetHandle() const { return handle_; }
+  Sbvalue &SetHandle(int32_t value) {
+    handle_ = std::move(value);
+    return *this;
+  }
 };
 
 class ValueChild {
  private:
   Sbvalue value_ = {};
   std::string name_ = {};
-  std::string display_value_ = {};
 
  public:
   ValueChild() = default;
@@ -310,11 +319,6 @@ class ValueChild {
   std::string GetName() const { return name_; }
   ValueChild &SetName(std::string value) {
     name_ = std::move(value);
-    return *this;
-  }
-  std::string GetDisplayValue() const { return display_value_; }
-  ValueChild &SetDisplayValue(std::string value) {
-    display_value_ = std::move(value);
     return *this;
   }
 };
@@ -520,6 +524,45 @@ class GetValueSummaryResponse {
   }
 };
 
+// Return type of the GetValueInfo command
+class GetValueInfoResponse {
+ private:
+  bool has_children_ = {};
+  std::optional<int32_t> location_ = {};
+  int32_t size_ = {};
+  std::string type_name_ = {};
+  std::optional<Error> error_ = {};
+
+ public:
+  GetValueInfoResponse() = default;
+  virtual ~GetValueInfoResponse() = default;
+  bool GetHasChildren() const { return has_children_; }
+  GetValueInfoResponse &SetHasChildren(bool value) {
+    has_children_ = std::move(value);
+    return *this;
+  }
+  std::optional<int32_t> GetLocation() const { return location_; }
+  GetValueInfoResponse &SetLocation(std::optional<int32_t> value) {
+    location_ = std::move(value);
+    return *this;
+  }
+  int32_t GetSize() const { return size_; }
+  GetValueInfoResponse &SetSize(int32_t value) {
+    size_ = std::move(value);
+    return *this;
+  }
+  std::string GetTypeName() const { return type_name_; }
+  GetValueInfoResponse &SetTypeName(std::string value) {
+    type_name_ = std::move(value);
+    return *this;
+  }
+  std::optional<Error> GetError() const { return error_; }
+  GetValueInfoResponse &SetError(std::optional<Error> value) {
+    error_ = std::move(value);
+    return *this;
+  }
+};
+
 // Return type of the GetValueChildren command
 class GetValueChildrenResponse {
  private:
@@ -659,6 +702,10 @@ class DWARFSymbolsApi {
   ) = 0;
 
   virtual GetValueSummaryResponse GetValueSummary(
+    Sbvalue value
+  ) = 0;
+
+  virtual GetValueInfoResponse GetValueInfo(
     Sbvalue value
   ) = 0;
 

@@ -7,6 +7,9 @@ import type {Chrome} from '../../../extension-api/ExtensionAPI.js';
 import type {WasmValue} from './WasmTypes.js';
 import type {HostInterface} from './WorkerRPC.js';
 
+import type * as SymbolsBackend from './SymbolsBackend.js';
+import { createEmbindPool, mapVector, stringifyErrorCode } from './EmbindUtils.js';
+
 export interface FieldInfo {
   typeId: string;
   name: string|undefined;
@@ -246,6 +249,119 @@ export class WasmMemoryView {
     const view = this.getPages(page, count);
     return new DataView(view.buffer, view.byteOffset + offset, byteLength);
   }
+}
+
+function memoize<T>(fn: () => T): () => T {
+  let value: T|undefined;
+  return () => {
+    if (value === undefined) {
+      value = fn();
+    }
+    return value;
+  };
+}
+
+export class SBValue implements Value, LazyObject {
+  private readonly objectId: string;
+  private readonly children: () => {name: string, value: LazyObject}[];
+  private readonly displayValue: () => string;
+  private readonly hasChildren: boolean;
+  private readonly typeName: string;
+  private readonly _location: number | undefined;
+  readonly size: number;
+
+  constructor(
+    private readonly objectStore: LazyObjectStore,
+    private readonly value: SymbolsBackend.Sbvalue,
+    private readonly backend: SymbolsBackend.Module,
+    private readonly dwarfSymbolsPlugin: SymbolsBackend.DWARFSymbolsPlugin,
+  ) {
+    this.children = memoize(() => {
+      const {manage, flush} = createEmbindPool();
+      try {
+        const response = manage(this.dwarfSymbolsPlugin.GetValueChildren(this.value));
+        if (response.error) {
+          throw new Error(`${stringifyErrorCode(response.error.code, this.backend)}: ${response.error.message}`);
+        }
+        const children = mapVector(manage(response.children), child => {
+          return ({ name: child.name, value: new SBValue(this.objectStore, child.value, this.backend, this.dwarfSymbolsPlugin) })
+        });
+        return children;
+      } finally {
+        flush();
+      }
+    });
+    this.displayValue = memoize(() => {
+      const {manage, flush} = createEmbindPool();
+      try {
+        const response = manage(this.dwarfSymbolsPlugin.GetValueSummary(this.value));
+        if (response.error) {
+          throw new Error(`${stringifyErrorCode(response.error.code, this.backend)}: ${response.error.message}`);
+        }
+        return response.displayValue || this.typeName;
+      } finally {
+        flush();
+      }
+    });
+    this.objectId = objectStore.store(this);
+
+    // Eagerly fetch basic information about the value.
+    {
+      const {manage, flush} = createEmbindPool();
+      try {
+        const response = manage(this.dwarfSymbolsPlugin.GetValueInfo(this.value));
+        if (response.error) {
+          throw new Error(`${stringifyErrorCode(response.error.code, this.backend)}: ${response.error.message}`);
+        }
+        this.hasChildren = response.hasChildren;
+        this.typeName = response.typeName;
+        this._location = response.location;
+        this.size = response.size;
+      } finally {
+        flush();
+      }
+    }
+  }
+
+  get location(): number {
+    return this._location ?? 0;
+  }
+
+  getMembers(): string[] {
+    return this.children().map(child => child.name);
+  }
+
+  async getProperties(): Promise<{ name: string; property: LazyObject; }[]> {
+    return this.children().map(child => ({name: child.name, property: child.value}));
+  }
+
+  async asRemoteObject(): Promise<Chrome.DevTools.RemoteObject | Chrome.DevTools.ForeignObject> {
+    return {
+      type: 'object',
+      description: this.displayValue(),
+      hasChildren: this.hasChildren,
+      objectId: this.objectId,
+      linearMemoryAddress: this._location,
+      linearMemorySize: this.size,
+      className: this.typeName,
+    };
+  }
+
+  get typeNames(): string[] {
+    throw new Error('Not implemented');
+  }
+  asUint8(): number { throw new Error('Not implemented'); }
+  asUint16(): number { throw new Error('Not implemented'); }
+  asUint32(): number { throw new Error('Not implemented'); }
+  asUint64(): bigint { throw new Error('Not implemented'); }
+  asInt8(): number { throw new Error('Not implemented'); }
+  asInt16(): number { throw new Error('Not implemented'); }
+  asInt32(): number { throw new Error('Not implemented'); }
+  asInt64(): bigint { throw new Error('Not implemented'); }
+  asFloat32(): number { throw new Error('Not implemented'); }
+  asFloat64(): number { throw new Error('Not implemented'); }
+  asDataView(offset?: number, size?: number): DataView { throw new Error('Not implemented'); }
+  $(selector: string|number): Value { throw new Error('Not implemented'); }
 }
 
 export class CXXValue implements Value, LazyObject {
