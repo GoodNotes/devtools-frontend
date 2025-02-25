@@ -92,7 +92,7 @@ deps = {
     'condition': 'checkout_cxx_debugging_extension_deps == True',
   },
   'extensions/cxx_debugging/third_party/swift/src': {
-    'url': 'https://github.com/kateinoigakukun/swift.git@22c48b6cf8507fe111de643139244eab4d6e50e8',
+    'url': 'https://github.com/kateinoigakukun/swift.git@b53e8c518167b82aeb9c8ded1a8fdcf46f40789f',
     'condition': 'checkout_cxx_debugging_extension_deps == True',
   },
 
