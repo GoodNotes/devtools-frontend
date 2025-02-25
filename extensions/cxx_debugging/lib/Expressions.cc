@@ -95,9 +95,7 @@ std::optional<llvm::Error> CheckError(lldb::SBValue value) {
   return llvm::createStringError(llvm::inconvertibleErrorCode(), message);
 }
 
-llvm::Expected<lldb::ProcessSP> CreateProcess(const WasmModule& module,
-                                             const api::DebuggerProxy& proxy,
-                                             size_t frame_offset) {
+llvm::Expected<lldb::ProcessSP> CreateProcess(const WasmModule& module) {
   auto target = module.Target()->shared_from_this();
   lldb::ListenerSP listener = lldb_private::Listener::MakeListener("wasm32");
 
@@ -112,8 +110,6 @@ llvm::Expected<lldb::ProcessSP> CreateProcess(const WasmModule& module,
           lldb::eSectionTypeCode, false);
   target->SetSectionLoadAddress(code_section, 0);
 
-  static_cast<WasmProcess*>(process.get())
-      ->SetProxyAndFrameOffset(proxy, frame_offset);
   process->UpdateThreadListIfNeeded();
   process->GetThreadList().SetSelectedThreadByID(0);
   return process;
@@ -136,8 +132,10 @@ llvm::Expected<ExpressionResult> InterpretExpression(
   WasmValueLoaderContext loader(proxy, *llvm::cast<SymbolFileWasmDWARF>(
                                            module.Module()->GetSymbolFile()));
 
+  lldb::SBFrame frame = thread->GetFrame();
+
   auto sm = lldb_eval::SourceManager::Create(expression.str());
-  auto ctx = lldb_eval::Context::Create(sm, lldb::SBFrame{thread->GetFrame()});
+  auto ctx = lldb_eval::Context::Create(sm, frame);
   lldb_eval::Parser parser(ctx);
   lldb_eval::Error e;
   auto tree = parser.Run(e);

@@ -166,7 +166,7 @@ export interface DWARFSymbolsPlugin extends EmbindObject {
   GetValueSummary(value: Sbvalue): GetValueSummaryResponse;
   GetValueInfo(value: Sbvalue): GetValueInfoResponse;
   GetValueChildren(value: Sbvalue): GetValueChildrenResponse;
-  EvaluateExpression(location: RawLocation,expression: string,debugProxy: unknown): EvaluateExpressionResponse;
+  EvaluateExpression(location: RawLocation,stopId: string,expression: string,debugProxy: unknown): EvaluateExpressionResponse;
 }
 
 export interface Module extends EmscriptenModule {

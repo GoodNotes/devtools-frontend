@@ -715,6 +715,7 @@ class DWARFSymbolsApi {
 
   virtual EvaluateExpressionResponse EvaluateExpression(
     RawLocation location,
+    std::string stop_id,
     std::string expression,
     emscripten::val debug_proxy
   ) = 0;

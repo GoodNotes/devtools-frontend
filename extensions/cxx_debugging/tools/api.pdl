@@ -245,6 +245,7 @@ domain symbols_backend
   command evaluateExpression
     parameters
       RawLocation location
+      string stopId
       string expression
       object debugProxy
     returns

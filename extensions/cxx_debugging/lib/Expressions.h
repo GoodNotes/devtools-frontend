@@ -41,9 +41,7 @@ struct ExpressionResult {
   std::optional<lldb::SBValue> value_object = std::nullopt;
 };
 
-llvm::Expected<lldb::ProcessSP> CreateProcess(const WasmModule& module,
-                                             const api::DebuggerProxy& proxy,
-                                             size_t frame_offset);
+llvm::Expected<lldb::ProcessSP> CreateProcess(const WasmModule& module);
 
 llvm::Expected<ExpressionResult> InterpretExpression(
     const WasmModule& module,

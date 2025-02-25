@@ -404,7 +404,7 @@ export class DWARFLanguageExtensionPlugin implements Chrome.DevTools.LanguageExt
       const wasm = new Formatters.HostWasmInterface(this.hostInterface, stopId);
       const proxy = new Formatters.DebuggerProxy(wasm, moduleInfo.backend);
       const typeInfoResult =
-          manage(moduleInfo.dwarfSymbolsPlugin.EvaluateExpression(apiRawLocation, expression, proxy));
+          manage(moduleInfo.dwarfSymbolsPlugin.EvaluateExpression(apiRawLocation, String(stopId), expression, proxy));
       const error = manage(typeInfoResult.error);
       if (error) {
         if (error.code === moduleInfo.backend.ErrorCode.MODULE_NOT_FOUND_ERROR) {

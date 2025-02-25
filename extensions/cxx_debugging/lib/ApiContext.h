@@ -93,12 +93,25 @@ class ApiContext : public DWARFSymbolsApi {
 
   EvaluateExpressionResponse EvaluateExpression(
       RawLocation location,
+      std::string stop_id,
       std::string expression,
       emscripten::val debug_proxy) final;
 
  private:
   llvm::StringMap<std::shared_ptr<WasmModule>> modules_;
   llvm::StringMap<lldb_private::CompilerType> types_;
+
+  struct LastProcessInfo {
+    lldb::ProcessSP process;
+    std::string stop_id;
+  };
+  /// The last process and stop id used to evaluate an expression.
+  std::optional<LastProcessInfo> last_process_;
+
+  llvm::Expected<lldb::ProcessSP> GetProcess(std::string stop_id,
+                                             std::shared_ptr<WasmModule> module,
+                                             const api::DebuggerProxy& proxy,
+                                             size_t frame_offset);
 
   std::shared_ptr<WasmModule> AddModule(llvm::StringRef id,
                                         llvm::StringRef path);

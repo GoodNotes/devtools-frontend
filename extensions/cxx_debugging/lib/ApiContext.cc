@@ -6,6 +6,7 @@
 #include "Expressions.h"
 #include "Variables.h"
 #include "WasmModule.h"
+#include "WasmVendorPlugins.h"
 #include "api.h"
 
 #include "lldb/API/SBAddress.h"
@@ -628,9 +629,31 @@ public:
 
 static SBValueArena arena;
 
+llvm::Expected<lldb::ProcessSP> ApiContext::GetProcess(
+    std::string stop_id,
+    std::shared_ptr<WasmModule> module,
+    const api::DebuggerProxy& proxy,
+    size_t frame_offset) {
+  lldb::ProcessSP process;
+  if (last_process_ && last_process_->process &&
+      last_process_->stop_id == stop_id) {
+    process = last_process_->process;
+  } else {
+    auto maybe_process = ::symbols_backend::CreateProcess(*module);
+    if (!maybe_process) {
+      return maybe_process.takeError();
+    }
+    process = maybe_process.get();
+    last_process_ = LastProcessInfo{process, stop_id};
+  }
+  static_cast<WasmProcess*>(process.get())
+      ->SetProxyAndFrameOffset(proxy, frame_offset);
+  return process;
+}
 
 api::EvaluateExpressionResponse ApiContext::EvaluateExpression(
     RawLocation location,
+    std::string stop_id,
     std::string expression,
     emscripten::val debug_proxy) {
   std::string raw_module_id = location.GetRawModuleId();
@@ -640,8 +663,7 @@ api::EvaluateExpressionResponse ApiContext::EvaluateExpression(
         MakeNotFoundError(raw_module_id));
   }
   DebuggerProxy proxy{debug_proxy};
-  auto process = ::symbols_backend::CreateProcess(*module, proxy,
-                                                  location.GetCodeOffset());
+  auto process = GetProcess(stop_id, module, proxy, location.GetCodeOffset());
   if (!process) {
     return api::EvaluateExpressionResponse().SetError(
         MakeError(Error::Code::kEvalError, process.takeError()));
@@ -672,6 +694,12 @@ api::GetValueSummaryResponse ApiContext::GetValueSummary(api::Sbvalue rawValue) 
         .SetError(MakeError(Error::Code::kEvalError, "Invalid SBValue passed to GetValueSummary"));
   }
 
+  if (!value.IsInScope()) {
+    return api::GetValueSummaryResponse()
+        .SetDisplayValue(std::nullopt)
+        .SetError(MakeError(Error::Code::kEvalError, "SBValue is not in scope"));
+  }
+
   auto tryStringify = [&](lldb::SBValue value) -> std::optional<std::string> {
     // Use GetSummary() if available.
     if (const char *summary = value.GetSummary()) {
@@ -687,6 +715,11 @@ api::GetValueSummaryResponse ApiContext::GetValueSummary(api::Sbvalue rawValue) 
   // First try to stringify the value itself.
   if (auto display_value = tryStringify(value)) {
     return api::GetValueSummaryResponse().SetDisplayValue(display_value);
+  }
+
+  if (!value.GetError().Success()) {
+    auto err = value.GetError();
+    return api::GetValueSummaryResponse().SetError(MakeError(Error::Code::kInternalError, err.GetCString()));
   }
 
   // If the value is a pointer or reference, dereference it and try again.
