@@ -63,7 +63,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: ./tools/bootstrap.py ../../out -verbose -no-check -release-version 90002 -patch-level 0
+      - run: ./tools/bootstrap.py ../../out -verbose -no-check -release-version 90003 -patch-level 0
         working-directory: ./extensions/cxx_debugging/
       - uses: actions/upload-artifact@v4
         with:
