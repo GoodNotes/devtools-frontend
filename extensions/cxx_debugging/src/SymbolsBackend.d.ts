@@ -49,7 +49,7 @@ export interface Variable extends EmbindObject {
 }
 
 export interface FieldInfo extends EmbindObject {
-  name: string|undefined;
+  name: string | undefined;
   offset: number;
   typeId: string;
 }
@@ -67,77 +67,97 @@ export interface TypeInfo extends EmbindObject {
   size: number;
   canExpand: boolean;
   hasValue: boolean;
-  arraySize: number|undefined;
+  arraySize: number | undefined;
   isPointer: boolean;
   members: Vector<FieldInfo>;
   enumerators: Vector<Enumerator>;
 }
 
+export interface Sbvalue extends EmbindObject {
+}
+
+export interface ValueChild extends EmbindObject {
+  value: Sbvalue;
+  name: string;
+  displayValue: string;
+}
+
 export interface AddRawModuleResponse extends EmbindObject {
   sources: Vector<string>;
   dwos: Vector<string>;
-  error: Error|undefined;
+  error: Error | undefined;
 }
 
 export interface SourceLocationToRawLocationResponse extends EmbindObject {
   rawLocationRanges: Vector<RawLocationRange>;
-  error: Error|undefined;
+  error: Error | undefined;
 }
 
 export interface RawLocationToSourceLocationResponse extends EmbindObject {
   sourceLocation: Vector<SourceLocation>;
-  error: Error|undefined;
+  error: Error | undefined;
 }
 
 export interface ListVariablesInScopeResponse extends EmbindObject {
   variable: Vector<Variable>;
-  error: Error|undefined;
+  error: Error | undefined;
 }
 
 export interface GetFunctionInfoResponse extends EmbindObject {
   functionNames: Vector<string>;
   missingSymbolFiles: Vector<string>;
-  error: Error|undefined;
+  error: Error | undefined;
 }
 
 export interface GetInlinedFunctionRangesResponse extends EmbindObject {
   rawLocationRanges: Vector<RawLocationRange>;
-  error: Error|undefined;
+  error: Error | undefined;
 }
 
 export interface GetInlinedCalleesRangesResponse extends EmbindObject {
   rawLocationRanges: Vector<RawLocationRange>;
-  error: Error|undefined;
+  error: Error | undefined;
 }
 
 export interface GetMappedLinesResponse extends EmbindObject {
   MappedLines: Vector<number>;
-  error: Error|undefined;
+  error: Error | undefined;
+}
+
+export interface GetValueSummaryResponse extends EmbindObject {
+  displayValue: string | undefined;
+  error: Error | undefined;
+}
+
+export interface GetValueChildrenResponse extends EmbindObject {
+  children: Vector<ValueChild>;
+  error: Error | undefined;
 }
 
 export interface EvaluateExpressionResponse extends EmbindObject {
   typeInfos: Vector<TypeInfo>;
   root: TypeInfo;
-  displayValue: string|undefined;
-  location: number|undefined;
-  memoryAddress: number|undefined;
-  data: Vector<number>|undefined;
-  error: Error|undefined;
+  displayValue: string | undefined;
+  location: number | undefined;
+  memoryAddress: number | undefined;
+  data: Vector<number> | undefined;
+  value: Sbvalue;
+  error: Error | undefined;
 }
 
 export interface DWARFSymbolsPlugin extends EmbindObject {
-  AddRawModule(rawModuleId: string, path: string): AddRawModuleResponse;
+  AddRawModule(rawModuleId: string,path: string): AddRawModuleResponse;
   RemoveRawModule(rawModuleId: string): void;
-  SourceLocationToRawLocation(rawModuleId: string, sourceFileURL: string, lineNumber: number, columnNumber: number):
-      SourceLocationToRawLocationResponse;
-  RawLocationToSourceLocation(rawModuleId: string, codeOffset: number, inlineFrameIndex: number):
-      RawLocationToSourceLocationResponse;
-  ListVariablesInScope(rawModuleId: string, codeOffset: number, inlineFrameIndex: number): ListVariablesInScopeResponse;
-  GetFunctionInfo(rawModuleId: string, codeOffset: number): GetFunctionInfoResponse;
-  GetInlinedFunctionRanges(rawModuleId: string, codeOffset: number): GetInlinedFunctionRangesResponse;
-  GetInlinedCalleesRanges(rawModuleId: string, codeOffset: number): GetInlinedCalleesRangesResponse;
-  GetMappedLines(rawModuleId: string, sourceFileURL: string): GetMappedLinesResponse;
-  EvaluateExpression(location: RawLocation, expression: string, debugProxy: unknown): EvaluateExpressionResponse;
+  SourceLocationToRawLocation(rawModuleId: string,sourceFileURL: string,lineNumber: number,columnNumber: number): SourceLocationToRawLocationResponse;
+  RawLocationToSourceLocation(rawModuleId: string,codeOffset: number,inlineFrameIndex: number): RawLocationToSourceLocationResponse;
+  ListVariablesInScope(rawModuleId: string,codeOffset: number,inlineFrameIndex: number): ListVariablesInScopeResponse;
+  GetFunctionInfo(rawModuleId: string,codeOffset: number): GetFunctionInfoResponse;
+  GetInlinedFunctionRanges(rawModuleId: string,codeOffset: number): GetInlinedFunctionRangesResponse;
+  GetInlinedCalleesRanges(rawModuleId: string,codeOffset: number): GetInlinedCalleesRangesResponse;
+  GetMappedLines(rawModuleId: string,sourceFileURL: string): GetMappedLinesResponse;
+  GetValueSummary(value: Sbvalue): GetValueSummaryResponse;
+  GetValueChildren(value: Sbvalue): GetValueChildrenResponse;
+  EvaluateExpression(location: RawLocation,expression: string,debugProxy: unknown): EvaluateExpressionResponse;
 }
 
 export interface Module extends EmscriptenModule {
@@ -148,20 +168,31 @@ export interface Module extends EmscriptenModule {
   SourceLocationArray: Vector<SourceLocation>;
   VariableArray: Vector<Variable>;
   Int32_TArray: Vector<number>;
+  ValueChildArray: Vector<ValueChild>;
   TypeInfoArray: Vector<TypeInfo>;
   FieldInfoArray: Vector<FieldInfo>;
   EnumeratorArray: Vector<Enumerator>;
-  ErrorCode:
-      {INTERNAL_ERROR: ErrorCode; PROTOCOL_ERROR: ErrorCode; MODULE_NOT_FOUND_ERROR: ErrorCode; EVAL_ERROR: ErrorCode;};
+  ErrorCode: {
+    INTERNAL_ERROR: ErrorCode;
+    PROTOCOL_ERROR: ErrorCode;
+    MODULE_NOT_FOUND_ERROR: ErrorCode;
+    EVAL_ERROR: ErrorCode;
+  };
   Error: Error;
   RawLocationRange: RawLocationRange;
   RawLocation: RawLocation;
   SourceLocation: SourceLocation;
-  VariableScope: {LOCAL: VariableScope; PARAMETER: VariableScope; GLOBAL: VariableScope;};
+  VariableScope: {
+    LOCAL: VariableScope;
+    PARAMETER: VariableScope;
+    GLOBAL: VariableScope;
+  };
   Variable: Variable;
   FieldInfo: FieldInfo;
   Enumerator: Enumerator;
   TypeInfo: TypeInfo;
+  Sbvalue: Sbvalue;
+  ValueChild: ValueChild;
   AddRawModuleResponse: AddRawModuleResponse;
   SourceLocationToRawLocationResponse: SourceLocationToRawLocationResponse;
   RawLocationToSourceLocationResponse: RawLocationToSourceLocationResponse;
@@ -170,6 +201,8 @@ export interface Module extends EmscriptenModule {
   GetInlinedFunctionRangesResponse: GetInlinedFunctionRangesResponse;
   GetInlinedCalleesRangesResponse: GetInlinedCalleesRangesResponse;
   GetMappedLinesResponse: GetMappedLinesResponse;
+  GetValueSummaryResponse: GetValueSummaryResponse;
+  GetValueChildrenResponse: GetValueChildrenResponse;
   EvaluateExpressionResponse: EvaluateExpressionResponse;
 }
 

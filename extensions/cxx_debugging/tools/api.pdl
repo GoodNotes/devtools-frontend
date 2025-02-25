@@ -209,6 +209,29 @@ domain symbols_backend
       # Error details if the command failed
       optional Error error
 
+  type SBValue extends object
+    properties
+
+  command getValueSummary
+    parameters
+      SBValue value
+    returns
+      optional string displayValue
+      optional Error error
+
+  type ValueChild extends object
+    properties
+      SBValue value
+      string name
+      string displayValue
+  
+  command getValueChildren
+    parameters
+      SBValue value
+    returns
+      array of ValueChild children
+      optional Error error
+
   command evaluateExpression
     parameters
       RawLocation location
@@ -221,4 +244,5 @@ domain symbols_backend
       optional integer location
       optional integer memoryAddress
       optional array of integer data
+      SBValue value
       optional Error error

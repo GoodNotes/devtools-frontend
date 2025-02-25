@@ -167,6 +167,17 @@ EMSCRIPTEN_BINDINGS(DWARFSymbolsPlugin) {
       .property("enumerators", &symbols_backend::api::TypeInfo::GetEnumerators, &symbols_backend::api::TypeInfo::SetEnumerators)
       ;
 
+  emscripten::class_<symbols_backend::api::Sbvalue>("Sbvalue")
+      .constructor<>()
+      ;
+
+  emscripten::class_<symbols_backend::api::ValueChild>("ValueChild")
+      .constructor<>()
+      .property("value", &symbols_backend::api::ValueChild::GetValue, &symbols_backend::api::ValueChild::SetValue)
+      .property("name", &symbols_backend::api::ValueChild::GetName, &symbols_backend::api::ValueChild::SetName)
+      .property("displayValue", &symbols_backend::api::ValueChild::GetDisplayValue, &symbols_backend::api::ValueChild::SetDisplayValue)
+      ;
+
   emscripten::class_<symbols_backend::api::AddRawModuleResponse>("AddRawModuleResponse")
       .constructor<>()
       .property("sources", &symbols_backend::api::AddRawModuleResponse::GetSources, &symbols_backend::api::AddRawModuleResponse::SetSources)
@@ -217,6 +228,18 @@ EMSCRIPTEN_BINDINGS(DWARFSymbolsPlugin) {
       .property("error", OptionalGetter(&symbols_backend::api::GetMappedLinesResponse::GetError), OptionalSetter(&symbols_backend::api::GetMappedLinesResponse::SetError))
       ;
 
+  emscripten::class_<symbols_backend::api::GetValueSummaryResponse>("GetValueSummaryResponse")
+      .constructor<>()
+      .property("displayValue", OptionalGetter(&symbols_backend::api::GetValueSummaryResponse::GetDisplayValue), OptionalSetter(&symbols_backend::api::GetValueSummaryResponse::SetDisplayValue))
+      .property("error", OptionalGetter(&symbols_backend::api::GetValueSummaryResponse::GetError), OptionalSetter(&symbols_backend::api::GetValueSummaryResponse::SetError))
+      ;
+
+  emscripten::class_<symbols_backend::api::GetValueChildrenResponse>("GetValueChildrenResponse")
+      .constructor<>()
+      .property("children", &symbols_backend::api::GetValueChildrenResponse::GetChildren, &symbols_backend::api::GetValueChildrenResponse::SetChildren)
+      .property("error", OptionalGetter(&symbols_backend::api::GetValueChildrenResponse::GetError), OptionalSetter(&symbols_backend::api::GetValueChildrenResponse::SetError))
+      ;
+
   emscripten::class_<symbols_backend::api::EvaluateExpressionResponse>("EvaluateExpressionResponse")
       .constructor<>()
       .property("typeInfos", &symbols_backend::api::EvaluateExpressionResponse::GetTypeInfos, &symbols_backend::api::EvaluateExpressionResponse::SetTypeInfos)
@@ -225,6 +248,7 @@ EMSCRIPTEN_BINDINGS(DWARFSymbolsPlugin) {
       .property("location", OptionalGetter(&symbols_backend::api::EvaluateExpressionResponse::GetLocation), OptionalSetter(&symbols_backend::api::EvaluateExpressionResponse::SetLocation))
       .property("memoryAddress", OptionalGetter(&symbols_backend::api::EvaluateExpressionResponse::GetMemoryAddress), OptionalSetter(&symbols_backend::api::EvaluateExpressionResponse::SetMemoryAddress))
       .property("data", OptionalGetter(&symbols_backend::api::EvaluateExpressionResponse::GetData), OptionalSetter(&symbols_backend::api::EvaluateExpressionResponse::SetData))
+      .property("value", &symbols_backend::api::EvaluateExpressionResponse::GetValue, &symbols_backend::api::EvaluateExpressionResponse::SetValue)
       .property("error", OptionalGetter(&symbols_backend::api::EvaluateExpressionResponse::GetError), OptionalSetter(&symbols_backend::api::EvaluateExpressionResponse::SetError))
       ;
   emscripten::register_vector<std::string>("StringArray");
@@ -232,6 +256,7 @@ EMSCRIPTEN_BINDINGS(DWARFSymbolsPlugin) {
   emscripten::register_vector<symbols_backend::api::SourceLocation>("SourceLocationArray");
   emscripten::register_vector<symbols_backend::api::Variable>("VariableArray");
   emscripten::register_vector<int32_t>("Int32_TArray");
+  emscripten::register_vector<symbols_backend::api::ValueChild>("ValueChildArray");
   emscripten::register_vector<symbols_backend::api::TypeInfo>("TypeInfoArray");
   emscripten::register_vector<symbols_backend::api::FieldInfo>("FieldInfoArray");
   emscripten::register_vector<symbols_backend::api::Enumerator>("EnumeratorArray");
@@ -257,6 +282,10 @@ EMSCRIPTEN_BINDINGS(DWARFSymbolsPlugin) {
                 &symbols_backend::DWARFSymbolsPlugin::GetInlinedCalleesRanges)
       .function("GetMappedLines",
                 &symbols_backend::DWARFSymbolsPlugin::GetMappedLines)
+      .function("GetValueSummary",
+                &symbols_backend::DWARFSymbolsPlugin::GetValueSummary)
+      .function("GetValueChildren",
+                &symbols_backend::DWARFSymbolsPlugin::GetValueChildren)
       .function("EvaluateExpression",
                 &symbols_backend::DWARFSymbolsPlugin::EvaluateExpression)
       ;

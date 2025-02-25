@@ -289,6 +289,36 @@ class TypeInfo {
   }
 };
 
+class Sbvalue {
+ private:
+};
+
+class ValueChild {
+ private:
+  Sbvalue value_ = {};
+  std::string name_ = {};
+  std::string display_value_ = {};
+
+ public:
+  ValueChild() = default;
+  virtual ~ValueChild() = default;
+  Sbvalue GetValue() const { return value_; }
+  ValueChild &SetValue(Sbvalue value) {
+    value_ = std::move(value);
+    return *this;
+  }
+  std::string GetName() const { return name_; }
+  ValueChild &SetName(std::string value) {
+    name_ = std::move(value);
+    return *this;
+  }
+  std::string GetDisplayValue() const { return display_value_; }
+  ValueChild &SetDisplayValue(std::string value) {
+    display_value_ = std::move(value);
+    return *this;
+  }
+};
+
 // Return type of the AddRawModule command
 class AddRawModuleResponse {
  private:
@@ -469,6 +499,48 @@ class GetMappedLinesResponse {
   }
 };
 
+// Return type of the GetValueSummary command
+class GetValueSummaryResponse {
+ private:
+  std::optional<std::string> display_value_ = {};
+  std::optional<Error> error_ = {};
+
+ public:
+  GetValueSummaryResponse() = default;
+  virtual ~GetValueSummaryResponse() = default;
+  std::optional<std::string> GetDisplayValue() const { return display_value_; }
+  GetValueSummaryResponse &SetDisplayValue(std::optional<std::string> value) {
+    display_value_ = std::move(value);
+    return *this;
+  }
+  std::optional<Error> GetError() const { return error_; }
+  GetValueSummaryResponse &SetError(std::optional<Error> value) {
+    error_ = std::move(value);
+    return *this;
+  }
+};
+
+// Return type of the GetValueChildren command
+class GetValueChildrenResponse {
+ private:
+  std::vector<ValueChild> children_ = {};
+  std::optional<Error> error_ = {};
+
+ public:
+  GetValueChildrenResponse() = default;
+  virtual ~GetValueChildrenResponse() = default;
+  std::vector<ValueChild> GetChildren() const { return children_; }
+  GetValueChildrenResponse &SetChildren(std::vector<ValueChild> value) {
+    children_ = std::move(value);
+    return *this;
+  }
+  std::optional<Error> GetError() const { return error_; }
+  GetValueChildrenResponse &SetError(std::optional<Error> value) {
+    error_ = std::move(value);
+    return *this;
+  }
+};
+
 // Return type of the EvaluateExpression command
 class EvaluateExpressionResponse {
  private:
@@ -478,6 +550,7 @@ class EvaluateExpressionResponse {
   std::optional<int32_t> location_ = {};
   std::optional<int32_t> memory_address_ = {};
   std::optional<std::vector<int32_t>> data_ = {};
+  Sbvalue value_ = {};
   std::optional<Error> error_ = {};
 
  public:
@@ -511,6 +584,11 @@ class EvaluateExpressionResponse {
   std::optional<std::vector<int32_t>> GetData() const { return data_; }
   EvaluateExpressionResponse &SetData(std::optional<std::vector<int32_t>> value) {
     data_ = std::move(value);
+    return *this;
+  }
+  Sbvalue GetValue() const { return value_; }
+  EvaluateExpressionResponse &SetValue(Sbvalue value) {
+    value_ = std::move(value);
     return *this;
   }
   std::optional<Error> GetError() const { return error_; }
@@ -578,6 +656,14 @@ class DWARFSymbolsApi {
   virtual GetMappedLinesResponse GetMappedLines(
     std::string raw_module_id, //Module identifier
     std::string source_file_url //Source file URL
+  ) = 0;
+
+  virtual GetValueSummaryResponse GetValueSummary(
+    Sbvalue value
+  ) = 0;
+
+  virtual GetValueChildrenResponse GetValueChildren(
+    Sbvalue value
   ) = 0;
 
   virtual EvaluateExpressionResponse EvaluateExpression(
